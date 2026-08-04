@@ -146,6 +146,7 @@ def band_story_html(s):
         f'<article class="story is-mode-stacked"><a href="{s["url"]}">'
         f'<div class="media-frame" style=""><img src="{s["img"]}" alt="" style="aspect-ratio:3 / 2"></div>'
         f'<div class="story__text"><h3 class="headline" style="font-size:17px">{s["title"]}</h3>'
+        f'<p class="blurb">{s["blurb"]}</p>'
         f'<div class="post-meta"><time>{long_date(s["iso"])}</time></div></div></a></article>'
     )
 
