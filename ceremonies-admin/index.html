@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Livestream Ceremonies — admin concept</title>
+<!--
+  UX prototype: replaces the ACF "ceremony" options-page repeater (105 rows,
+  one giant accordion each) with a Webflow-Collections-style manager.
+  Real data exported from wp_options on the ngn dev-env, 2026-08-06.
+  All edits are mock (in-memory only).
+-->
+<style>
+  :root{
+    --ink:#1a1a1e; --mut:#6b6b74; --line:#e6e6ea; --bg:#f7f7f8; --card:#fff;
+    --red:#c8102e; --green:#0e8a4d; --blue:#2563eb;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);font-size:13.5px;color:var(--ink);background:var(--bg)}
+  button,input,select{font:inherit;color:inherit}
+  .shell{max-width:1280px;margin:0 auto;padding:28px clamp(16px,3vw,40px) 80px}
+
+  /* header */
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .head h1{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .head .count{color:var(--mut);font-size:13px;margin-top:2px}
+  .btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;
+    border-radius:8px;padding:8px 14px;font-weight:600;font-size:13px;cursor:pointer;transition:.15s}
+  .btn:hover{border-color:#c9c9cf}
+  .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff;margin-left:auto}
+  .btn.primary:hover{background:#000}
+  .btn.danger{color:var(--red)}
+
+  /* toolbar */
+  .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .tabs{display:inline-flex;background:#ececef;border-radius:9px;padding:3px;gap:2px}
+  .tabs button{border:0;background:none;border-radius:7px;padding:6px 13px;font-weight:600;
+    font-size:13px;color:var(--mut);cursor:pointer}
+  .tabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .tabs .n{font-weight:400;opacity:.65;margin-left:4px;font-size:12px}
+  .search{position:relative;margin-left:auto}
+  .search input{width:260px;border:1px solid var(--line);border-radius:8px;background:#fff;
+    padding:8px 12px 8px 32px;font-size:13px}
+  .search input:focus{outline:2px solid rgba(37,99,235,.35);border-color:var(--blue)}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;
+    stroke:var(--mut);fill:none;stroke-width:2}
+  select.flt{border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px 10px;font-size:13px;cursor:pointer}
+
+  /* bulk bar */
+  .bulk{display:none;align-items:center;gap:10px;background:var(--ink);color:#fff;border-radius:10px;
+    padding:8px 14px;margin-bottom:12px;font-size:13px}
+  .bulk.on{display:flex}
+  .bulk button{border:1px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:7px;
+    padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer}
+  .bulk button:hover{background:rgba(255,255,255,.12)}
+
+  /* table */
+  .tablewrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto;
+    max-height:calc(100vh - 210px)}
+  table{width:100%;border-collapse:collapse;min-width:980px}
+  thead th{position:sticky;top:0;z-index:5;background:#fafafb;border-bottom:1px solid var(--line);
+    text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--mut);padding:10px 12px;white-space:nowrap;cursor:pointer;user-select:none}
+  thead th.nosort{cursor:default}
+  thead th .dir{font-size:10px;margin-left:3px}
+  tbody td{border-bottom:1px solid #f0f0f2;padding:9px 12px;vertical-align:middle;white-space:nowrap}
+  tbody tr{cursor:pointer;transition:background .1s}
+  tbody tr:hover{background:#f7f9ff}
+  tbody tr.sel{background:#eef3ff}
+  .titlecell{display:flex;align-items:center;gap:10px}
+  .thumb{width:44px;height:30px;border-radius:5px;object-fit:cover;background:#ececef;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:#b9b9c0;font-size:9px;font-weight:700}
+  .title{font-weight:600;max-width:300px;overflow:hidden;text-overflow:ellipsis}
+  .title .sub{display:block;font-weight:400;font-size:12px;color:var(--mut);margin-top:1px;
+    overflow:hidden;text-overflow:ellipsis}
+  .pill{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;border-radius:999px;
+    padding:3px 10px;letter-spacing:.02em}
+  .pill.live{background:#fdeaee;color:var(--red)}
+  .pill.upcoming{background:#e8f0fe;color:var(--blue)}
+  .pill.past{background:#efeff2;color:var(--mut)}
+  .pill.type{background:#f1f1f4;color:var(--ink);font-weight:600;text-transform:capitalize}
+  .pill.type.convocation{background:#fff3e0;color:#9a5b00}
+  .assets{display:inline-flex;gap:6px;color:var(--mut)}
+  .assets span{width:20px;height:20px;border-radius:5px;background:#f1f1f4;display:inline-flex;
+    align-items:center;justify-content:center;font-size:10.5px;font-weight:700}
+  .assets span.ok{background:#e7f5ec;color:var(--green)}
+  .datecell b{font-weight:600}
+  .datecell .tz{color:var(--mut);font-size:12px;margin-left:4px}
+
+  /* live switch */
+  .sw{position:relative;width:34px;height:20px;border-radius:999px;background:#d8d8de;border:0;
+    cursor:pointer;transition:.15s;flex-shrink:0}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:.15s}
+  .sw.on{background:var(--red)}
+  .sw.on::after{left:16px}
+
+  input[type=checkbox]{width:15px;height:15px;accent-color:var(--ink);cursor:pointer}
+
+  .empty{padding:48px;text-align:center;color:var(--mut)}
+
+  /* slide-over editor */
+  .scrim{position:fixed;inset:0;background:rgba(20,20,24,.35);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .panel{position:fixed;top:0;right:0;bottom:0;width:min(460px,94vw);background:#fff;z-index:50;
+    box-shadow:-12px 0 40px rgba(0,0,0,.18);transform:translateX(102%);transition:transform .22s ease;
+    display:flex;flex-direction:column}
+  .panel.on{transform:none}
+  .panel .phead{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .panel .phead h2{font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .panel .phead .x{border:0;background:none;font-size:20px;color:var(--mut);cursor:pointer;line-height:1}
+  .panel .pbody{flex:1;overflow-y:auto;padding:18px 20px}
+  .panel .pfoot{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
+  .panel .pfoot .btn.primary{margin-left:0}
+  .fld{margin-bottom:14px}
+  .fld label{display:block;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--mut);margin-bottom:5px}
+  .fld input,.fld select{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;background:#fff}
+  .fld input:focus,.fld select:focus{outline:2px solid rgba(37,99,235,.35);border-color:var(--blue)}
+  .fld .hint{font-size:11.5px;color:var(--mut);margin-top:4px}
+  .fldrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .imgfld{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fafafb}
+  .imgfld img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#ececef}
+  .imgfld__empty{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:#b9b9c0;font-size:12px}
+  .imgfld__meta{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;
+    font-size:12px;color:var(--mut);overflow:hidden}
+  .imgfld__meta > span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .linklike{border:0;background:none;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;padding:0}
+  .livefld{display:flex;align-items:center;gap:10px;background:#fafafb;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px;margin-bottom:16px}
+  .livefld b{font-size:13px}
+  .livefld .hint{margin:0;flex:1}
+
+  .note{margin-top:14px;font-size:12px;color:var(--mut)}
+  .pubbar{position:fixed;left:50%;bottom:22px;transform:translate(-50%,80px);z-index:60;display:flex;
+    align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:12px;padding:10px 12px 10px 18px;
+    box-shadow:0 10px 34px rgba(0,0,0,.3);transition:transform .2s ease}
+  .pubbar.on{transform:translate(-50%,0)}
+  .pubbar .chg{font-size:13px;font-weight:600}
+  .pubbar .chg::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:#f6a609;margin-right:8px;vertical-align:1px}
+  .pubbar .btn{background:none;border-color:rgba(255,255,255,.3);color:#fff}
+  .pubbar .btn.publish{background:var(--green);border-color:var(--green)}
+  .toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);z-index:70;background:#fff;
+    border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:12.5px;max-width:460px;
+    box-shadow:0 8px 30px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:.2s}
+  .toast.on{opacity:1}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f6a609;margin-right:6px;vertical-align:1px}
+  .ordcell{color:#c2c2c8;font-size:11.5px;white-space:nowrap}
+  .ordcell .grip{cursor:grab;margin-right:5px;font-size:13px;color:#b0b0b8}
+  .ordcell .pos{font-variant-numeric:tabular-nums}
+  tr.dragging{opacity:.4}
+  tr.dropline td{box-shadow:inset 0 2px 0 var(--blue)}
+  .perr{color:var(--red);font-size:12px;margin-top:4px;min-height:16px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <div>
+      <h1>Livestream Ceremonies</h1>
+      <div class="count" id="count"></div>
+    </div>
+    <button class="btn primary" onclick="openPanel(null)">+ New ceremony</button>
+  </div>
+
+  <div class="bar">
+    <div class="tabs" id="statusTabs"></div>
+    <button class="btn" id="manualBtn" onclick="state.sortK='manual';state.sortDir=1;render()" title="Restore saved row order">Manual order</button>
+    <select class="flt" id="typeFlt"><option value="">All types</option></select>
+    <select class="flt" id="yearFlt"><option value="">All years</option></select>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="q" type="search" placeholder="Search title, venue, page&hellip;">
+    </div>
+  </div>
+
+  <div class="bulk" id="bulk">
+    <span id="bulkN"></span>
+    <button onclick="bulkLive(true)">Set live</button>
+    <button onclick="bulkLive(false)">Set off</button>
+    <button onclick="bulkDelete()">Delete</button>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="nosort" style="width:34px"><input type="checkbox" id="selAll" onclick="toggleAll(this)"></th>
+          <th class="nosort drag-col" style="width:44px" title="Drag to reorder (manual order view)">#</th>
+          <th class="nosort" style="width:52px">Live</th>
+          <th data-k="ceremony_title">Ceremony <span class="dir"></span></th>
+          <th data-k="ceremony_type">Type <span class="dir"></span></th>
+          <th data-k="date">Date <span class="dir"></span></th>
+          <th data-k="_status">Status <span class="dir"></span></th>
+          <th data-k="venue">Venue <span class="dir"></span></th>
+          <th class="nosort">Assets</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No ceremonies match.</div>
+  </div>
+  <p class="note">Concept prototype (mock data layer): replaces the ACF options-page repeater UI.
+  Data is a real export of the 105 ceremony rows. Edits do not persist. Drag the ⠿ handle to
+  reorder (available in Manual order view with no filters); saved order is preserved exactly as
+  the repeater stores it. Note the public pages sort by date regardless.</p>
+</div>
+
+<div class="pubbar" id="pubbar">
+  <span class="chg" id="pubN"></span>
+  <button class="btn" onclick="discardAll()">Discard</button>
+  <button class="btn publish" onclick="publishAll()">Publish</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="scrim" id="scrim" onclick="closePanel()"></div>
+<aside class="panel" id="panel" aria-label="Edit ceremony">
+  <div class="phead"><h2 id="ptitle"></h2><button class="x" onclick="closePanel()" aria-label="Close">&times;</button></div>
+  <div class="pbody" id="pbody"></div>
+  <div class="pfoot">
+    <button class="btn primary" onclick="savePanel()">Save</button>
+    <button class="btn" onclick="closePanel()">Cancel</button>
+    <button class="btn" onclick="duplicateCurrent()">Duplicate</button>
+    <button class="btn danger" style="margin-left:auto" onclick="deleteCurrent()">Delete</button>
+  </div>
+</aside>
+
+<script>
+const ATT = {"225916":"https://news.northeastern.edu/wp-content/uploads/2024/04/042924_MM_PhD_Hooding_037.jpg","225936":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Bouve-Doctorate-Screen.jpg","225938":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-CAMD-Grad-Screen.jpg","225939":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Bouve-Undergrad-Screen.jpg","225973":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Bouve-Pinning-Screen.jpg","225977":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-DMSB-Grad-Screen.jpg","225982":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-DMSB-Undergrad-Screen.jpg","225984":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-COE-Undergrad-Screen.jpg","225988":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-COE-Grad-Screen.jpg","225990":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Khoury-Undergrad-Screen.jpg","225992":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Khoury-Grad-Screen.jpg","225994":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-COS-Undergrad-Screen.jpg","225996":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-COS-Grad-Screen.jpg","225999":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-CSSH-Undergrad-Screen.jpg","226004":"https://news.northeastern.edu/wp-content/uploads/2024/04/CPS-2024-Livestream-Screen_May08.jpg","226006":"https://news.northeastern.edu/wp-content/uploads/2024/04/CPS-2024-Livestream-Screen_May09.jpg","226010":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Charlotte-Livestream-Screens.jpg","226012":"https://news.northeastern.edu/wp-content/uploads/2024/04/Mills-2024-Livestream-Screen_FINAL.png","226040":"https://news.northeastern.edu/wp-content/uploads/2024/04/042924_MM_PhD_Hooding_037_ef2b25.jpg","226042":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Roux-Livestream-Screens.jpg","226044":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Seattle-Livestream-Screens.jpg","226045":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Silicon-Valley-Livestream-Screens.jpg","226047":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Toronto-Livestream-Screens.jpg","226051":"https://news.northeastern.edu/wp-content/uploads/2024/04/2024-Vancouver-Livestream-Screens.jpg","226263":"https://news.northeastern.edu/wp-content/uploads/2024/05/2024-JohnOBryant-Baccalaureate-Screen.jpg","226264":"https://news.northeastern.edu/wp-content/uploads/2024/05/2024-SOL-Grad-Screen.jpg","226824":"https://news.northeastern.edu/wp-content/uploads/2024/05/2024-Fenway-Grad-Livestream-Screen.jpg","227062":"https://news.northeastern.edu/wp-content/uploads/2024/05/2024-Fenway-Undergrad-Livestream-Screen.jpg","261673":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Charlotte-Livestream-Screen.jpg","261674":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-The-Roux-Livestream-Screen.jpg","261675":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Seattle-Livestream-Screen.jpg","261676":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Silicon-Valley-Livestream-Screen.jpg","261680":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Toronto-Livestream-Screen.jpg","261684":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Vancouver-Livestream-Screen.jpg","261688":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-CAMD-Livestream-Screen.jpg","261692":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Bouve-Grand_Undergrad-Livestream-Screen.jpg","261696":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-DMSB-Undergrad-Livestream-Screen.jpg","261700":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-COE-Undergrad-Livestream-Screen.jpg","261706":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Khoury-Undergrad-Livestream-Screen.jpg","261710":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-COS-Undergrad-Livestream-Screen.jpg","261715":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-CSSH-Livestream-Screens.jpg","261722":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-CPS-Comm-Livestream-Screen.jpg","261746":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-SOL-Livestream-Screen.jpg","261770":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-John_O_Bryant-Livestream-Screen.jpg","261774":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Boston-Undergrad-Livestream-Screen.jpg","261891":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Arlington-Livestream-Screen.jpg","261967":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Boston-Grad-Livestream-Screen.jpg","261976":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Bouve-Doctorate-Livestream-Screen.jpg","261983":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Bouve-Pinning-Livestream-Screen.jpg","262008":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-DMSB-Grad-Livestream-Screen.jpg","262018":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-COE-Graduate-Livestream-Screen.jpg","262082":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-Khoury-Grad-Livestream-Screen.jpg","262110":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-COS-Grad-Livestream-Screen.jpg","263018":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-CPS-Doctoral-Livestream-Screen_REVISED.jpg","263019":"https://news.northeastern.edu/wp-content/uploads/2025/04/2025-PhD-Livestream-Screen-revised.jpg","274888":"https://news.northeastern.edu/wp-content/uploads/2025/08/2025-Bouve-August-Pinning-Livestream-Screen.jpg","275218":"https://news.northeastern.edu/wp-content/uploads/2025/08/2025-Charlotte-August-Livestream-Screen.jpg","275459":"https://news.northeastern.edu/wp-content/uploads/2025/08/2025-Bouve-August-Livestream-Screen-2-1-sm.png","279230":"https://news.northeastern.edu/wp-content/uploads/2025/10/2025-London-October-Livestream-Screen-1.jpg","284744":"https://news.northeastern.edu/wp-content/uploads/2025/12/2025-Charlotte-Dec_Pinning-Livestream-Screen.jpg","284745":"https://news.northeastern.edu/wp-content/uploads/2025/12/2025-Boston-Dec_Pinning-Livestream-Screen.jpg","295986":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-PhD-Livestream-Screen_04.24.26.jpg","295987":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-SOL-Livestream-Screen_04.24.26.jpg","295989":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-COS-Undergrad_Livestream-Screens_04.25.26.jpg","295990":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-COS-Grad_Livestream-Screen_04.25.26.jpg","295991":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Khoury-Undergrad_Livestream-Screen_04.26.26.jpg","295996":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Khoury-Grad_Livestream-Screen_04.26.26.jpg","296004":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-CAMD-Livestream-Screen_04.26.26.jpg","296005":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-CSSH-Livestream-Screen_04.27.26.jpg","296006":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Bouve-Doctorate-Livestream-Screen_04.27.26.jpg","296016":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-COE-Undergrad_Livestream-Screen_04.27.26.jpg","296017":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Bouve-Pinning-Livestream-Screen_04.27.26.jpg","296018":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Bouve-Livestream-Screen_04.28.26.jpg","296019":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-DMSB-Undergrad_Livestream-Screen_04.28.26.jpg","296020":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-African-American-Institute-Livestream-Screen_04.28.26.jpg","296021":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Fenway-Grad_Livestream-Screen_04.29.26.jpg","296022":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Fenway-Undergrad_Livestream-Screen_04.29.26.jpg","296023":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-COE-Grad_Livestream-Screen_04.30.26.jpg","296024":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-DMSB-Grad_Livestream-Screen_04.30.26.jpg","296025":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-CPS-Livestream-Screen_05.01.26.jpg","296026":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Miami-Livestream-Screen_05.02.26.jpg","296027":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Arlington-Livestream-Screen_05.08.26.jpg","296028":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Charlotte-Livestream-Screen_05.12.26.jpg","296029":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Vancouver-Livestream-Screen_05.14.26.jpg","296030":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Oakland-and-SL_Livestream-Screen_05.16.26.jpg","296032":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Seattle-Livestream-Screen_05.21.26.jpg","296034":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Toronto-Livestream-Screen_05.26.26.jpg","296037":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-Roux-Livestream-Screen_06.12.26.jpg","296040":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-London-Livestream-Screen_07.07.26.jpg","296044":"https://news.northeastern.edu/wp-content/uploads/2026/04/2026-CPS-Doctoral-Livestream-Screen_08.21.26.jpg","308427":"https://news.northeastern.edu/wp-content/uploads/2026/07/2026-Convocation-Livestream-Screen_BOSTON.jpg","308432":"https://news.northeastern.edu/wp-content/uploads/2026/07/2026-Convocation-Livestream-Screen_LONDON.jpg","308435":"https://news.northeastern.edu/wp-content/uploads/2026/07/2026-Convocation-Livestream-Screen_OAKLAND.jpg"};
+let BASELINE = null;
+const DATA = [{"ceremony_title":"Doctor of Philosophy Commencement","ceremony_type":"commencement","date":"2026-04-24 10:00:00","is_live":"0","key_art":"295986","livestream_page":"doctor-of-philosophy-2026","page_url":"https://ngn.local.northeastern.edu/livestream/doctor-of-philosophy-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/doctor_of_philosophy_commencement","section_heading":"Doctor of Philosophy Commencement 2026","stream_embed_url":"https://www.youtube.com/embed/bvLt4U4Iq6A?si=V-dCxA-v6XhPCr5k","thumbnail":"295986","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":0},{"ceremony_title":"School of Law Commencement","ceremony_type":"commencement","date":"2026-04-24 16:00:00","is_live":"0","key_art":"295987","livestream_page":"sol-2026","page_url":"https://ngn.local.northeastern.edu/livestream/law-school-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/school_of_law_commencement","section_heading":"School of Law Commencement 2026","stream_embed_url":"https://www.youtube.com/embed/Opz6VPxOn_g?si=QdiDV7pb_QLKHrDM","thumbnail":"295987","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":1},{"ceremony_title":"College of Science \u2013 Undergraduate Ceremony (1)","ceremony_type":"commencement","date":"2026-04-25 09:00:00","is_live":"0","key_art":"295989","livestream_page":"cos-undergrad1-2026","page_url":"https://ngn.local.northeastern.edu/livestream/cos-undergraduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/cos_ug_1","section_heading":"College of Science Undergraduate Celebrations","stream_embed_url":"https://www.youtube.com/embed/G2NQuByTffQ?si=wcW_UA3IlYSh-gj7","thumbnail":"295989","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":2},{"ceremony_title":"College of Science \u2013 Undergraduate Ceremony (2)","ceremony_type":"commencement","date":"2026-04-25 13:30:00","is_live":"0","key_art":"295989","livestream_page":"cos-undergrad2-2026","page_url":"https://ngn.local.northeastern.edu/livestream/cos-undergraduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/cos_ug_2","section_heading":"College of Science Undergraduate Celebrations","stream_embed_url":"https://www.youtube.com/embed/10l-Cmcy6yI?si=s4LNjfvLuOxCg16H","thumbnail":"295989","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":3},{"ceremony_title":"College of Science \u2013 Graduate Ceremony","ceremony_type":"commencement","date":"2026-04-25 18:00:00","is_live":"0","key_art":"295990","livestream_page":"cos-grad-2026","page_url":"https://ngn.local.northeastern.edu/livestream/cos-graduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/cos_gr_1","section_heading":"College of Science Graduate Celebration","stream_embed_url":"https://www.youtube.com/embed/v-8sfFXO2rA?si=MqsrDuBxZE0A49Jk","thumbnail":"295990","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":4},{"ceremony_title":"Khoury College of Computer Sciences \u2013 Undergraduate Ceremony","ceremony_type":"commencement","date":"2026-04-26 09:00:00","is_live":"0","key_art":"295991","livestream_page":"khoury-undergrad-2026","page_url":"https://ngn.local.northeastern.edu/livestream/khoury-undergraduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/khoury_ug_1","section_heading":"Khoury College of Computer Sciences Undergraduate Ceremony 2026","stream_embed_url":"https://www.youtube.com/embed/WJt_HRikxeA?si=9vMblWrQNijlbxP1","thumbnail":"295991","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":5},{"ceremony_title":"Khoury College of Computer Sciences \u2013 Graduate Ceremony","ceremony_type":"commencement","date":"2026-04-26 13:30:00","is_live":"0","key_art":"295996","livestream_page":"khoury-grad-2026","page_url":"https://ngn.local.northeastern.edu/livestream/khoury-graduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/khoury_gr_1","section_heading":"Khoury College of Computer Sciences Graduate Ceremony 2026","stream_embed_url":"https://www.youtube.com/embed/nN71J0DX4cc?si=Di-ZB5yp0bsn31ic","thumbnail":"295996","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":6},{"ceremony_title":"College of Arts, Media & Design \u2013 Graduate & Undergraduate Ceremony","ceremony_type":"commencement","date":"2026-04-26 18:00:00","is_live":"0","key_art":"296004","livestream_page":"camd-2026","page_url":"https://ngn.local.northeastern.edu/livestream/camd-graduation-celebration-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/camd_ug_gr_1","section_heading":"College of Arts, Media & Design Graduation Celebration 2026","stream_embed_url":"https://www.youtube.com/embed/-R27q6dn4Qc?si=ukZG5gM0m71XGW-Z","thumbnail":"296004","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":7},{"ceremony_title":"College of Social Sciences & Humanities \u2013 Graduate & Undergraduate Ceremony","ceremony_type":"commencement","date":"2026-04-27 09:00:00","is_live":"0","key_art":"296005","livestream_page":"cssh-2026","page_url":"https://ngn.local.northeastern.edu/livestream/cssh-graduation-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/cssh_ug_gr_1","section_heading":"College of Social Sciences and Humanities Graduation Ceremony 2026","stream_embed_url":"https://www.youtube.com/embed/SmlRNLUnIEw?si=bJBU7od-QsVHP_i1","thumbnail":"296005","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":8},{"ceremony_title":"Bouv\u00e9 College of Health Sciences \u2013 Doctorate Ceremony","ceremony_type":"commencement","date":"2026-04-27 10:00:00","is_live":"0","key_art":"296006","livestream_page":"bouve-doc-2026","page_url":"https://ngn.local.northeastern.edu/livestream/bouve-doctorate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/bouv_dr_1","section_heading":"Bouv\u00e9 College of Health Sciences Doctorate Celebration 2026","stream_embed_url":"https://www.youtube.com/embed/dzXbHy7VQEA?si=igXA5FF3qz_DPm1J","thumbnail":"296006","timezone":"EDT","venue":"Blackman Auditorium","_idx":9},{"ceremony_title":"College of Engineering \u2013 Undergraduate Ceremony (1)","ceremony_type":"commencement","date":"2026-04-27 13:30:00","is_live":"0","key_art":"296016","livestream_page":"coe-undergrad1-2026","page_url":"https://ngn.local.northeastern.edu/livestream/coe-undergraduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/coe_ug_1","section_heading":"College of Engineering Undergraduate Ceremony 2026","stream_embed_url":"https://www.youtube.com/embed/9pZtHa0N1II?si=LVHlWK7cVOPPx55O","thumbnail":"296016","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":10},{"ceremony_title":"School of Nursing Pinning Ceremony - Boston","ceremony_type":"commencement","date":"2026-04-27 16:00:00","is_live":"0","key_art":"296017","livestream_page":"bouve-pinning-bos-spring-2026","page_url":"https://ngn.local.northeastern.edu/livestream/nursing-pinning-boston-spring-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/nurse_pinning_ceremony","section_heading":"Bouv\u00e9 School of Nursing Pinning Boston Spring 2026","stream_embed_url":"https://www.youtube.com/embed/M4RtJHaCZYk?si=lDuUGQFCgHJzr2R0","thumbnail":"296017","timezone":"EDT","venue":"Blackman Auditorium","_idx":11},{"ceremony_title":"College of Engineering \u2013 Undergraduate Ceremony (2)","ceremony_type":"commencement","date":"2026-04-27 18:00:00","is_live":"0","key_art":"296016","livestream_page":"coe-undergrad2-2026","page_url":"https://ngn.local.northeastern.edu/livestream/coe-undergraduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/coe_ug_2","section_heading":"College of Engineering Undergraduate Ceremony 2026","stream_embed_url":"https://www.youtube.com/embed/DS0YeEBUgME?si=4thHjVcv66dz1ZrD","thumbnail":"296016","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":12},{"ceremony_title":"Bouv\u00e9 College of Health Sciences \u2013  Undergraduate & Graduate Ceremony","ceremony_type":"commencement","date":"2026-04-28 09:00:00","is_live":"0","key_art":"296018","livestream_page":"bouve-2026","page_url":"https://ngn.local.northeastern.edu/livestream/bouve-celebration-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/bouv_ug_gr_1","section_heading":"Bouv\u00e9 College of Health Sciences Graduation Celebrations 2026","stream_embed_url":"https://www.youtube.com/embed/ffqCtSsC0gk?si=LzeNnaMGLHamMmVo","thumbnail":"296018","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":13},{"ceremony_title":"D\u2019Amore-McKim School of Business \u2013 Undergraduate Ceremony (1)","ceremony_type":"commencement","date":"2026-04-28 13:30:00","is_live":"0","key_art":"296019","livestream_page":"dmsb-undergrad1-2026","page_url":"https://ngn.local.northeastern.edu/livestream/dmsb-undergraduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/d_amore_ug_1","section_heading":"D'Amore-McKim School of Business Undergraduate Celebrations 2026","stream_embed_url":"https://www.youtube.com/embed/L8uiZCHtD2c?si=dokXcA_R9C-sm95n","thumbnail":"296019","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":14},{"ceremony_title":"John D. O\u2019Bryant African American Institute Baccalaureate Ceremony","ceremony_type":"commencement","date":"2026-04-28 16:30:00","is_live":"0","key_art":"296020","livestream_page":"obryant-bacc-2026","page_url":"https://ngn.local.northeastern.edu/livestream/african-american-institute-baccalaureate-2026/","program_link":"","section_heading":"John D. O'Bryant African American Institute Baccalaureate Ceremony 2026","stream_embed_url":"https://www.youtube.com/embed/UTnw20tbUFk?si=re0dNtLTTyIfk5di","thumbnail":"296020","timezone":"EDT","venue":"Blackman Auditorium","_idx":15},{"ceremony_title":"D\u2019Amore-McKim School of Business \u2013 Undergraduate Ceremony (2)","ceremony_type":"commencement","date":"2026-04-28 18:00:00","is_live":"0","key_art":"296019","livestream_page":"dmsb-undergrad2-2026","page_url":"https://ngn.local.northeastern.edu/livestream/dmsb-undergraduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/d_amore_ug_2","section_heading":"D'Amore-McKim School of Business Undergraduate Celebrations 2026","stream_embed_url":"https://www.youtube.com/embed/3GxEzzFsNhI?si=wd3OsESDZL5dRyCL","thumbnail":"296019","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":16},{"ceremony_title":"Northeastern Commencement \u2013 Graduate Ceremony","ceremony_type":"commencement","date":"2026-04-29 10:00:00","is_live":"0","key_art":"296021","livestream_page":"graduate-2026","page_url":"https://ngn.local.northeastern.edu/livestream/graduate-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/fenway_graduate_commencement","section_heading":"Northeastern Graduate Commencement Livestream 2026","stream_embed_url":"https://vimeo.com/event/5884651/embed","thumbnail":"296021","timezone":"EDT","venue":"Fenway Park","_idx":17},{"ceremony_title":"Northeastern Commencement \u2013 Undergraduate Ceremony","ceremony_type":"commencement","date":"2026-04-29 16:00:00","is_live":"0","key_art":"296022","livestream_page":"undergraduate-2026","page_url":"https://ngn.local.northeastern.edu/livestream/undergraduate-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/2026_university_undergraduate_commencement","section_heading":"Northeastern Undergraduate Commencement Livestream 2026","stream_embed_url":"https://vimeo.com/event/5884669/embed","thumbnail":"296022","timezone":"EDT","venue":"Fenway Park","_idx":18},{"ceremony_title":"College of Engineering \u2013 Graduate Ceremony (1)","ceremony_type":"commencement","date":"2026-04-30 09:00:00","is_live":"0","key_art":"296023","livestream_page":"coe-grad1-2026","page_url":"https://ngn.local.northeastern.edu/livestream/coe-graduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/coe_gr_1","section_heading":"College of Engineering Graduate Ceremonies 2026","stream_embed_url":"https://www.youtube.com/embed/r3kc14OAyVc?si=HoH0Fq1A9P-AQUuQ","thumbnail":"296023","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":19},{"ceremony_title":"College of Engineering \u2013 Graduate Ceremony (2)","ceremony_type":"commencement","date":"2026-04-30 13:30:00","is_live":"0","key_art":"296023","livestream_page":"coe-grad2-2026","page_url":"https://ngn.local.northeastern.edu/livestream/coe-graduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/coe_gr_2","section_heading":"College of Engineering Graduate Ceremonies 2026","stream_embed_url":"https://www.youtube.com/embed/iv7xiO4-Uac?si=bxstKp1NhPIZTFuJ","thumbnail":"296023","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":20},{"ceremony_title":"D\u2019Amore-McKim School of Business \u2013 Graduate Ceremony","ceremony_type":"commencement","date":"2026-04-30 18:00:00","is_live":"0","key_art":"296024","livestream_page":"dmsb-grad-2026","page_url":"https://ngn.local.northeastern.edu/livestream/dmsb-graduate-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/d_amore_gr_1","section_heading":"D'Amore-McKim School of Business Graduate Celebration 2026","stream_embed_url":"https://www.youtube.com/embed/f7ClHkweD2E?si=ADbWO98JVcc9PP6i","thumbnail":"296024","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":21},{"ceremony_title":"College of Professional Studies Commencement \u2013 Ceremony 1","ceremony_type":"commencement","date":"2026-05-01 10:00:00","is_live":"0","key_art":"296025","livestream_page":"cps1-2026","page_url":"https://ngn.local.northeastern.edu/livestream/cps-graduation-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/college_of_professional_studies_commencement_1","section_heading":"College of Professional Studies Commencement Ceremonies 2026","stream_embed_url":"https://www.youtube.com/embed/WOEaZ-zgifY?si=UJID4ogfH7kCoWTY","thumbnail":"296025","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":22},{"ceremony_title":"College of Professional Studies Commencement \u2013 Ceremony 2","ceremony_type":"commencement","date":"2026-05-01 15:00:00","is_live":"0","key_art":"296025","livestream_page":"cps2-2026","page_url":"https://ngn.local.northeastern.edu/livestream/cps-graduation-ceremony-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/college_of_professional_studies_commencement_2","section_heading":"College of Professional Studies Commencement Ceremonies 2026","stream_embed_url":"https://www.youtube.com/embed/bz-jP9xaguM?si=8Of5hz42nVUZIhXt","thumbnail":"296025","timezone":"EDT","venue":"Leader Bank Pavilion","_idx":23},{"ceremony_title":"Miami Commencement","ceremony_type":"commencement","date":"2026-05-02 12:00:00","is_live":"0","key_art":"296026","livestream_page":"miami-2026","page_url":"","program_link":"https://issuu.com/nuacademicceremonies/docs/miami_commencement","section_heading":"Miami Commencement","stream_embed_url":"","thumbnail":"296026","timezone":"EDT","venue":"Miami Campus","_idx":24},{"ceremony_title":"Arlington Commencement","ceremony_type":"commencement","date":"2026-05-08 16:00:00","is_live":"0","key_art":"296027","livestream_page":"arlington-2026","page_url":"https://ngn.local.northeastern.edu/livestream/arlington-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/arlington_commencement","section_heading":"Northeastern Arlington Commencement 2026","stream_embed_url":"https://www.youtube.com/embed/SNCES9kvdCw?si=Y75-W-h-uw2kL-34","thumbnail":"296027","timezone":"EDT","venue":"George Washington Masonic National Memorial Hall","_idx":25},{"ceremony_title":"Charlotte Commencement","ceremony_type":"commencement","date":"2026-05-12 16:00:00","is_live":"0","key_art":"296028","livestream_page":"charlotte-2026","page_url":"https://ngn.local.northeastern.edu/livestream/charlotte-commencement-spring-nursing-pinning-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/charlotte_commencement","section_heading":"Northeastern Charlotte Commencement & Spring Nursing Pinning 2026","stream_embed_url":"https://www.youtube.com/embed/Vj2XRXaeCUU?si=Ug9Vv64jgUht6aTa","thumbnail":"296028","timezone":"EDT","venue":"Halton Theater","_idx":26},{"ceremony_title":"Vancouver Convocation","ceremony_type":"commencement","date":"2026-05-14 16:00:00","is_live":"0","key_art":"296029","livestream_page":"vancouver-2026","page_url":"https://ngn.local.northeastern.edu/livestream/vancouver-convocation-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/vancouver_commencement","section_heading":"Northeastern Vancouver Convocation 2026","stream_embed_url":"https://www.youtube.com/embed/VaaoO1xiJWA?si=KBFPt8WbvzuGXYb_","thumbnail":"296029","timezone":"PDT","venue":"The Centre","_idx":27},{"ceremony_title":"Oakland & Silicon Valley Commencement","ceremony_type":"commencement","date":"2026-05-16 14:00:00","is_live":"0","key_art":"296030","livestream_page":"oakland-silicon-valley-2026","page_url":"https://ngn.local.northeastern.edu/livestream/oakland-silicon-valley-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/oakland_and_silicon_valley_commencement","section_heading":"Northeastern Oakland & Silicon Valley Commencement 2026","stream_embed_url":"https://www.youtube.com/embed/-gJpgjvA-xY?si=4UeyeOvaECzzqq5k","thumbnail":"296030","timezone":"PDT","venue":"Holmgren Meadow","_idx":28},{"ceremony_title":"Seattle Commencement","ceremony_type":"commencement","date":"2026-05-21 16:00:00","is_live":"0","key_art":"296032","livestream_page":"seattle-2026","page_url":"https://ngn.local.northeastern.edu/livestream/seattle-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/seattle_commencement","section_heading":"Northeastern Seattle Commencement 2026","stream_embed_url":"https://www.youtube.com/embed/oswbRUZke5U","thumbnail":"296032","timezone":"PDT","venue":"Benaroya Hall","_idx":29},{"ceremony_title":"Toronto Convocation","ceremony_type":"commencement","date":"2026-05-26 15:00:00","is_live":"0","key_art":"296034","livestream_page":"toronto-2026","page_url":"https://ngn.local.northeastern.edu/livestream/toronto-convocation-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/toronto_commencement","section_heading":"Northeastern Toronto Convocation 2026","stream_embed_url":"https://www.youtube.com/embed/kUjgTNjEGm4?si=jJ3nki4q8V260-9m","thumbnail":"296034","timezone":"EDT","venue":"Meridian Hall","_idx":30},{"ceremony_title":"The Roux Institute Commencement - Portland","ceremony_type":"commencement","date":"2026-06-12 16:00:00","is_live":"0","key_art":"296037","livestream_page":"roux-2026","page_url":"https://ngn.local.northeastern.edu/livestream/roux-institute-portland-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/portland_commencement","section_heading":"The Roux Institute Commencement - Portland","stream_embed_url":"https://www.youtube.com/embed/CIDkLZ8tHis?si=jqz22GBmTcoRh0rn","thumbnail":"296037","timezone":"EDT","venue":"Merrill Auditorium","_idx":31},{"ceremony_title":"London Graduation \u2013 Undergraduate, Postgraduate and Apprenticeship Ceremony","ceremony_type":"commencement","date":"2026-07-07 13:00:00","is_live":"0","key_art":"296040","livestream_page":"london-2026","page_url":"https://ngn.local.northeastern.edu/livestream/london-graduation-commencement-2026/","program_link":"https://issuu.com/nuacademicceremonies/docs/2026_london_graduation_ceremony","section_heading":"London Graduation \u2013 Undergraduate, Postgraduate and Apprenticeship Ceremony","stream_embed_url":"https://www.youtube.com/embed/Ktdied7j_2s?si=odoOuIzGuGNSokMa","thumbnail":"296040","timezone":"BST","venue":"Barbican Centre","_idx":32},{"ceremony_title":"College of Professional Studies Commencement \u2013 Doctoral Ceremony","ceremony_type":"commencement","date":"2026-08-21 10:30:00","is_live":"0","key_art":"296044","livestream_page":"cps-doc-2026","page_url":"","program_link":"","section_heading":"College of Professional Studies Doctoral Hooding and Graduation Ceremony 2026","stream_embed_url":"","thumbnail":"296044","timezone":"EDT","venue":"Blackman Auditorium","_idx":33},{"ceremony_title":"Doctor of Philosophy Commencement","ceremony_type":"commencement","date":"2025-04-28 15:00:00","is_live":"0","key_art":"263019","livestream_page":"doctor-of-philosophy-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/doctor-of-philosophy-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/2025_PhD_Program_4.30_Update.pdf","section_heading":"Commencement 2025 - Doctor of Philosophy Commencement","stream_embed_url":"https://vimeo.com/event/5086842/embed","thumbnail":"263019","timezone":"EDT","venue":"Matthews Arena","_idx":34},{"ceremony_title":"College of Professional Studies Graduation - Morning","ceremony_type":"commencement","date":"2025-04-30 10:00:00","is_live":"0","key_art":"261722","livestream_page":"cps-graduation-ceremony-livestream-2025_1","page_url":"https://ngn.local.northeastern.edu/livestream/cps-graduation-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/NECPS127_2025_CPS_Graduation_Program_FINAL_5.30.2025.pdf","section_heading":"Commencement 2025 - CPS Graduation Ceremonies","stream_embed_url":"https://vimeo.com/event/5086891/embed","thumbnail":"261722","timezone":"EDT","venue":"Matthews Arena","_idx":35},{"ceremony_title":"College of Professional Studies Graduation - Afternoon","ceremony_type":"commencement","date":"2025-04-30 15:00:00","is_live":"0","key_art":"261722","livestream_page":"cps-graduation-ceremony-livestream-2025_2","page_url":"https://ngn.local.northeastern.edu/livestream/cps-graduation-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/NECPS127_2025_CPS_Graduation_Program_FINAL_5.30.2025.pdf","section_heading":"Commencement 2025 - CPS Graduation Ceremonies","stream_embed_url":"https://vimeo.com/event/5086899/embed","thumbnail":"261722","timezone":"EDT","venue":"Matthews Arena","_idx":36},{"ceremony_title":"College of Professional Studies Doctoral Commencement","ceremony_type":"commencement","date":"2025-05-01 10:30:00","is_live":"0","key_art":"263018","livestream_page":"cps-doctoral-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/cps-doctoral-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/04/NECPS127_2025_CPS_Doctorate_Program_FINAL_as-of-4.30.2025-as-of-117pm.pdf","section_heading":"Commencement 2025 - CPS Doctoral Commencement","stream_embed_url":"https://vimeo.com/event/5086905/embed","thumbnail":"263018","timezone":"EDT","venue":"Matthews Arena","_idx":37},{"ceremony_title":"School of Law Commencement","ceremony_type":"commencement","date":"2025-05-02 13:00:00","is_live":"0","key_art":"261746","livestream_page":"law-school-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/law-school-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/2025_SOL_Program-FINAL.pdf","section_heading":"Commencement 2025 - Northeastern School of Law Graduation Celebration","stream_embed_url":"https://vimeo.com/event/5086917/embed","thumbnail":"261746","timezone":"EDT","venue":"Matthews Arena","_idx":38},{"ceremony_title":"Charlotte Commencement","ceremony_type":"commencement","date":"2025-05-02 15:00:00","is_live":"0","key_art":"261673","livestream_page":"charlotte-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/charlotte-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/2025_Charlotte_Program.pdf","section_heading":"Commencement 2025 - Charlotte","stream_embed_url":"https://www.youtube.com/embed/RMkYKQxYhaY","thumbnail":"261673","timezone":"EDT","venue":"Northeastern University - Charlotte Campus","_idx":39},{"ceremony_title":"College of Engineering Graduate Ceremony \u2014 10:00 a.m.","ceremony_type":"commencement","date":"2025-05-05 10:00:00","is_live":"0","key_art":"262018","livestream_page":"coe-graduate-ceremony-livestream-2025_1","page_url":"https://ngn.local.northeastern.edu/livestream/coe-graduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COE_Celebration_Graduate_program_FINAL.pdf","section_heading":"Commencement 2025 - Northeastern CoE Graduate Ceremony","stream_embed_url":"https://vimeo.com/event/5103468/embed","thumbnail":"262018","timezone":"EDT","venue":"Matthews Arena","_idx":40},{"ceremony_title":"College of Engineering Graduate Ceremony \u2014 12:30 p.m.","ceremony_type":"commencement","date":"2025-05-05 12:30:00","is_live":"0","key_art":"262018","livestream_page":"coe-graduate-ceremony-livestream-2025_2","page_url":"https://ngn.local.northeastern.edu/livestream/coe-graduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COE_Celebration_Graduate_program_FINAL.pdf","section_heading":"Commencement 2025 - Northeastern CoE Graduate Ceremony","stream_embed_url":"https://vimeo.com/event/5103475/embed","thumbnail":"262018","timezone":"EDT","venue":"Matthews Arena","_idx":41},{"ceremony_title":"College of Engineering Graduate Ceremony \u2014 3:00 p.m.","ceremony_type":"commencement","date":"2025-05-05 15:00:00","is_live":"0","key_art":"262018","livestream_page":"coe-graduate-ceremony-livestream-2025_3","page_url":"https://ngn.local.northeastern.edu/livestream/coe-graduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COE_Celebration_Graduate_program_FINAL.pdf","section_heading":"Commencement 2025 - Northeastern CoE Graduate Ceremony","stream_embed_url":"https://vimeo.com/event/5103482/embed","thumbnail":"262018","timezone":"EDT","venue":"Matthews Arena","_idx":42},{"ceremony_title":"College of Engineering Graduate Ceremony \u2014 5:30 p.m.","ceremony_type":"commencement","date":"2025-05-05 17:30:00","is_live":"0","key_art":"262018","livestream_page":"coe-graduate-ceremony-livestream-2025_4","page_url":"https://ngn.local.northeastern.edu/livestream/coe-graduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COE_Celebration_Graduate_program_FINAL.pdf","section_heading":"Commencement 2025 - Northeastern CoE Graduate Ceremony","stream_embed_url":"https://vimeo.com/event/5103484/embed","thumbnail":"262018","timezone":"EDT","venue":"Matthews Arena","_idx":43},{"ceremony_title":"Bouv\u00e9 College of Health Sciences Doctorate Celebration","ceremony_type":"commencement","date":"2025-05-06 09:00:00","is_live":"0","key_art":"261976","livestream_page":"bouve-doctorate-ceremony-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/bouve-doctorate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/5.5.25-UPDATED-PROGRAM_Bouve-Clinical-and-Practice-Doctorate-Hooding-Ceremony-May-6_FINAL.pdf","section_heading":"Commencement 2025 - Bouv\u00e9 College of Health Sciences Doctorate Celebration","stream_embed_url":"https://vimeo.com/event/5103514/embed","thumbnail":"261976","timezone":"EDT","venue":"Matthews Arena","_idx":44},{"ceremony_title":"Bouv\u00e9 College of Health Sciences Graduation Celebrations","ceremony_type":"commencement","date":"2025-05-06 13:30:00","is_live":"0","key_art":"261692","livestream_page":"bouve-celebration-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/bouve-celebration-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/2025-BV-UGGR-Celebration-Program_5-5-2025_FINAL.pdf","section_heading":"Commencement 2025 - Bouv\u00e9 College of Health Sciences Graduation Celebrations","stream_embed_url":"https://vimeo.com/event/5103520/embed","thumbnail":"261692","timezone":"EDT","venue":"Matthews Arena","_idx":45},{"ceremony_title":"Khoury College of Computer Sciences Undergraduate Celebration","ceremony_type":"commencement","date":"2025-05-07 09:00:00","is_live":"0","key_art":"261706","livestream_page":"khoury-undergraduate-ceremony-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/khoury-undergraduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/Khoury-College-UG-Program_2025_FINAL.pdf","section_heading":"Commencement 2025 - Northeastern Khoury Undergraduate Ceremony","stream_embed_url":"https://vimeo.com/event/5103530/embed","thumbnail":"261706","timezone":"EDT","venue":"Matthews Arena","_idx":46},{"ceremony_title":"Khoury College of Computer Sciences Graduate Celebration","ceremony_type":"commencement","date":"2025-05-07 13:30:00","is_live":"0","key_art":"262082","livestream_page":"khoury-graduate-ceremony-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/khoury-graduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/Khoury-College-MS-Program_2025_FINAL.pdf","section_heading":"Commencement 2025 - Northeastern Khoury Graduate Ceremony","stream_embed_url":"https://vimeo.com/event/5103541/embed","thumbnail":"262082","timezone":"EDT","venue":"Matthews Arena","_idx":47},{"ceremony_title":"College of Arts, Media & Design Graduation Celebration 2025","ceremony_type":"commencement","date":"2025-05-07 18:00:00","is_live":"0","key_art":"261688","livestream_page":"camd-graduation-celebration-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/camd-graduation-celebration-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/CAMD-5-7-25-College-Celebration-Undergrad_Grad_FINAL.pdf","section_heading":"College of Arts, Media & Design Graduation Celebration 2025","stream_embed_url":"https://vimeo.com/event/5103547/embed","thumbnail":"261688","timezone":"EDT","venue":"Matthews Arena","_idx":48},{"ceremony_title":"D'Amore-McKim School of Business Undergraduate Celebration - Morning","ceremony_type":"commencement","date":"2025-05-08 09:00:00","is_live":"0","key_art":"261696","livestream_page":"dmsb-undergraduate-ceremony-livestream-2025_1","page_url":"https://ngn.local.northeastern.edu/livestream/dmsb-undergraduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/DMSB_9-AM-College-Celebration-Undergraduate-Program_FINAL.pdf","section_heading":"Commencement 2025 - Northeastern DMSB Undergraduate Celebration","stream_embed_url":"https://vimeo.com/event/5113898/embed","thumbnail":"261696","timezone":"EDT","venue":"Matthews Arena","_idx":49},{"ceremony_title":"D'Amore-McKim School of Business Undergraduate Celebration - Afternoon","ceremony_type":"commencement","date":"2025-05-08 13:30:00","is_live":"0","key_art":"261696","livestream_page":"dmsb-undergraduate-ceremony-livestream-2025_2","page_url":"https://ngn.local.northeastern.edu/livestream/dmsb-undergraduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/DMSB_130PM-College-Celebration-Undergraduate-Program-v5_final.pdf","section_heading":"Commencement 2025 - Northeastern DMSB Undergraduate Celebration","stream_embed_url":"https://vimeo.com/event/5113900/embed","thumbnail":"261696","timezone":"EDT","venue":"Matthews Arena","_idx":50},{"ceremony_title":"Bouv\u00e9 College of Health Sciences School of Nursing Pinning","ceremony_type":"commencement","date":"2025-05-08 16:00:00","is_live":"0","key_art":"261983","livestream_page":"nursing-pinning-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/nursing-pinning-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/435734_NU_Bouve_SoN_2025_Boston_Pin_Prog-Final.pdf","section_heading":"Commencement 2025 - Bouv\u00e9 College of Health Sciences School of Nursing Pinning","stream_embed_url":"https://vimeo.com/event/5113907/embed","thumbnail":"261983","timezone":"EDT","venue":"Blackman Auditorium","_idx":51},{"ceremony_title":"D'Amore-McKim School of Business Graduate Celebration","ceremony_type":"commencement","date":"2025-05-08 18:30:00","is_live":"0","key_art":"262008","livestream_page":"dmsb-graduate-ceremony-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/dmsb-graduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/FINAL-DMSB-College-Celebration-Graduate-Program.pdf","section_heading":"Commencement 2025 - Northeastern DMSB Graduation Celebrations","stream_embed_url":"https://vimeo.com/event/5113909/embed","thumbnail":"262008","timezone":"EDT","venue":"Matthews Arena","_idx":52},{"ceremony_title":"College of Science Undergraduate Celebration - Morning","ceremony_type":"commencement","date":"2025-05-09 09:00:00","is_live":"0","key_art":"261710","livestream_page":"cos-undergraduate-ceremony-livestream-2025_1","page_url":"https://ngn.local.northeastern.edu/livestream/cos-undergraduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/CoS-Celebration-Undergraduate1.pdf","section_heading":"Commencement 2025 - College of Science Undergraduate Celebration","stream_embed_url":"https://vimeo.com/event/5113917/embed","thumbnail":"261710","timezone":"EDT","venue":"Matthews Arena","_idx":53},{"ceremony_title":"College of Science Undergraduate Celebration - Afternoon","ceremony_type":"commencement","date":"2025-05-09 13:30:00","is_live":"0","key_art":"261710","livestream_page":"cos-undergraduate-ceremony-livestream-2025_2","page_url":"https://ngn.local.northeastern.edu/livestream/cos-undergraduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/CoS-Celebration-Undergraduate2.pdf","section_heading":"Commencement 2025 - College of Science Undergraduate Celebration","stream_embed_url":"https://vimeo.com/event/5113920/embed","thumbnail":"261710","timezone":"EDT","venue":"Matthews Arena","_idx":54},{"ceremony_title":"John D. O'Bryant African American Institute Baccalaureate","ceremony_type":"commencement","date":"2025-05-09 16:30:00","is_live":"0","key_art":"261770","livestream_page":"african-american-institute-baccalaureate-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/african-american-institute-baccalaureate-livestream-2025/","program_link":"","section_heading":"Commencement 2025 - John D. O'Bryant African American Institute Baccalaureate 2025","stream_embed_url":"https://vimeo.com/event/5114878/embed","thumbnail":"261770","timezone":"EDT","venue":"Blackman Auditorium","_idx":55},{"ceremony_title":"College of Science Graduate Celebration","ceremony_type":"commencement","date":"2025-05-09 18:00:00","is_live":"0","key_art":"262110","livestream_page":"cos-graduate-ceremony-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/cos-graduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/CoS-Celebration-Graduate.pdf","section_heading":"Commencement 2025 - College of Science Graduate Celebration","stream_embed_url":"https://vimeo.com/event/5114882/embed","thumbnail":"262110","timezone":"EDT","venue":"Matthews Arena","_idx":56},{"ceremony_title":"College of Social Sciences and Humanities Graduate and Undergraduate Celebration","ceremony_type":"commencement","date":"2025-05-10 09:00:00","is_live":"0","key_art":"261715","livestream_page":"cssh-graduation-ceremony-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/cssh-graduation-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/CSSH-25-College-Celebration-Undergrad_Grad-V2.pdf","section_heading":"Commencement 2025 - Northeastern CSSH Graduation and Undergraduate Ceremony 2025","stream_embed_url":"https://vimeo.com/event/5114883/embed","thumbnail":"261715","timezone":"EDT","venue":"Matthews Arena","_idx":57},{"ceremony_title":"College of Engineering Undergraduate Celebration","ceremony_type":"commencement","date":"2025-05-10 13:30:00","is_live":"0","key_art":"261700","livestream_page":"coe-undergraduate-ceremony-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/coe-undergraduate-ceremony-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COE_Celebration_UG_program_finalrev2.pdf","section_heading":"Commencement 2025 - Northeastern CoE Undergraduate Ceremony","stream_embed_url":"https://vimeo.com/event/5114886/embed","thumbnail":"261700","timezone":"EDT","venue":"Matthews Arena","_idx":58},{"ceremony_title":"Graduate Commencement","ceremony_type":"commencement","date":"2025-05-11 10:00:00","is_live":"0","key_art":"261967","livestream_page":"graduate-commencement-livestream-updates-2025","page_url":"https://ngn.local.northeastern.edu/livestream/graduate-commencement-livestream-updates-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/2025-NEU-GRAD-CommProg-Proof-4-FINAL-INTERACTIVE.pdf","section_heading":"Commencement 2025 - Graduate Livestream","stream_embed_url":"https://vimeo.com/event/5123169/embed","thumbnail":"261967","timezone":"EDT","venue":"Fenway Park","_idx":59},{"ceremony_title":"Undergraduate Commencement","ceremony_type":"commencement","date":"2025-05-11 16:00:00","is_live":"0","key_art":"261774","livestream_page":"undergraduate-commencement-livestream-updates-2025","page_url":"https://ngn.local.northeastern.edu/livestream/undergraduate-commencement-livestream-updates-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/2025-NEU-UNDERGRAD-CommProg-Proof-4-FINAL-INTERACTIVE.pdf","section_heading":"Commencement 2025 - Northeastern Undergrad Livestream","stream_embed_url":"https://vimeo.com/event/5123173/embed","thumbnail":"261774","timezone":"EDT","venue":"Fenway Park","_idx":60},{"ceremony_title":"Silicon Valley Commencement","ceremony_type":"commencement","date":"2025-05-18 14:00:00","is_live":"0","key_art":"261676","livestream_page":"silicon-valley-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/silicon-valley-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COM_25_005_Silicon-Valley_Program_v6.pdf","section_heading":"Commencement 2025 - Northeastern Silicon Valley","stream_embed_url":"https://www.youtube.com/embed/eej9hho2AkY","thumbnail":"261676","timezone":"PDT","venue":"California Theatre","_idx":61},{"ceremony_title":"Seattle Commencement","ceremony_type":"commencement","date":"2025-05-20 16:00:00","is_live":"0","key_art":"261675","livestream_page":"seattle-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/seattle-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COM_25_005_Seattle_Program_v3.pdf","section_heading":"Commencement 2025 - Seattle","stream_embed_url":"https://www.youtube.com/embed/Cply71lP5T8","thumbnail":"261675","timezone":"PDT","venue":"Benaroya Hall","_idx":62},{"ceremony_title":"Toronto Convocation","ceremony_type":"commencement","date":"2025-05-27 16:00:00","is_live":"0","key_art":"261680","livestream_page":"toronto-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/toronto-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/05/COM_25_005_Toronto_Program_v7.pdf","section_heading":"Commencement 2025 - Toronto Convocation","stream_embed_url":"https://www.youtube.com/embed/m8PGks0o_8s","thumbnail":"261680","timezone":"EDT","venue":"Meridian Hall","_idx":63},{"ceremony_title":"Vancouver Convocation","ceremony_type":"commencement","date":"2025-05-29 16:00:00","is_live":"0","key_art":"261684","livestream_page":"vancouver-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/vancouver-commencement-livestream-2025/","program_link":"https://commencement.northeastern.edu/wp-content/uploads/COM_25_005_Vancouver_Program_v4.pdf","section_heading":"Commencement 2025 - Vancouver","stream_embed_url":"https://www.youtube.com/embed/yFQUiNEGdSQ","thumbnail":"261684","timezone":"PDT","venue":"The Centre","_idx":64},{"ceremony_title":"Arlington Commencement","ceremony_type":"commencement","date":"2025-06-11 16:00:00","is_live":"0","key_art":"261891","livestream_page":"arlington-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/arlington-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/06/COM_25_005_Arlington_Program_v8.pdf","section_heading":"Commencement 2025 - Arlington","stream_embed_url":"https://www.youtube.com/embed/DQG9O5OOknI","thumbnail":"261891","timezone":"EDT","venue":"George Washington Masonic National Memorial Hall","_idx":65},{"ceremony_title":"The Roux Institute Commencement","ceremony_type":"commencement","date":"2025-06-13 16:00:00","is_live":"0","key_art":"261674","livestream_page":"roux-institute-commencement-livestream-2025","page_url":"https://ngn.local.northeastern.edu/livestream/roux-institute-commencement-livestream-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/06/COM_25_005_Roux_Program_v6_495449.pdf","section_heading":"Commencement 2025 - The Roux Institute","stream_embed_url":"https://www.youtube.com/embed/k8emVx5zeQ8","thumbnail":"261674","timezone":"EDT","venue":"Merrill Auditorium","_idx":66},{"ceremony_title":"Bouv\u00e9 College of Health Sciences School of Nursing Pinning Ceremony, Boston","ceremony_type":"commencement","date":"2025-08-14 14:00:00","is_live":"0","key_art":"274888","livestream_page":"bouve-nursing-pinning-livestream-august-2025","page_url":"https://ngn.local.northeastern.edu/livestream/bouve-nursing-pinning-livestream-august-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/08/SON-Summer2025-Ceremony-Program-Boston.pdf","section_heading":"Commencement 2025 - Bouv\u00e9 College of Health Sciences School of Nursing Pinning Ceremony, Boston","stream_embed_url":"https://www.youtube.com/embed/DJV-JODxCrM","thumbnail":"274888","timezone":"EDT","venue":"Blackman Auditorium","_idx":67},{"ceremony_title":"Bouv\u00e9 College of Health Sciences School of Nursing Pinning Ceremony, Charlotte","ceremony_type":"commencement","date":"2025-08-19 14:00:00","is_live":"0","key_art":"275218","livestream_page":"bouve-nursing-pinning-livestream-charlotte-august-2025","page_url":"https://ngn.local.northeastern.edu/livestream/bouve-nursing-pinning-livestream-charlotte-august-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/08/SON-Summer2025-Ceremony-Program-Charlotte.pdf","section_heading":"Commencement 2025 - Bouv\u00e9 College of Health Sciences School of Nursing Pinning Ceremony, Charlotte","stream_embed_url":"https://northeastern.zoom.us/j/91937349980","thumbnail":"275218","timezone":"EDT","venue":"2151 Hawkins Street, 8th Floor","_idx":68},{"ceremony_title":"Bouv\u00e9 College of Health Sciences Physician Assistant and Physical Therapy Graduation Celebration","ceremony_type":"commencement","date":"2025-08-22 14:00:00","is_live":"0","key_art":"275459","livestream_page":"bouve-physician-assistant-physical-therapy-graduation-2025","page_url":"https://ngn.local.northeastern.edu/livestream/bouve-physician-assistant-physical-therapy-graduation-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/08/Bouve_082225_FINAL_Program.pdf","section_heading":"Commencement 2025 - Bouv\u00e9 College Physician Assistant and Physical Therapy Graduation Celebration","stream_embed_url":"https://www.youtube.com/embed/j4NrXMKKZhk","thumbnail":"275459","timezone":"EDT","venue":"Blackman Auditorium","_idx":69},{"ceremony_title":"London Graduation and Prizegiving Ceremony","ceremony_type":"commencement","date":"2025-10-08 13:00:00","is_live":"0","key_art":"279230","livestream_page":"london-graduation-prizegiving-ceremony-2025","page_url":"https://ngn.local.northeastern.edu/livestream/london-graduation-prizegiving-ceremony-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/10/2025_UG_London_Programme_draft8_Final_rev.pdf","section_heading":"Commencement 2025 - Graduation and Prizegiving Ceremony","stream_embed_url":"https://www.youtube.com/embed/rg7sPNTjC0o","thumbnail":"279230","timezone":"BST","venue":"Queen Elizabeth Hall","_idx":70},{"ceremony_title":"Bouv\u00e9 College of Health Sciences School of Nursing Pinning Ceremony, Charlotte","ceremony_type":"commencement","date":"2025-12-11 14:00:00","is_live":"0","key_art":"284744","livestream_page":"school-of-nursing-pinning-ceremony-charlotte-2025","page_url":"https://ngn.local.northeastern.edu/livestream/school-of-nursing-pinning-ceremony-charlotte-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/12/SON-CLT-Ceremony-Program-458799_NU_Bouve_SoN_Charlotte_Pin_Prog_Nov2025_dr1.pdf","section_heading":"Commencement 2025 - Nursing Pinning, Charlotte","stream_embed_url":"https://northeastern.zoom.us/j/99597828468","thumbnail":"284744","timezone":"EST","venue":"Parr Center Theatre","_idx":71},{"ceremony_title":"Bouv\u00e9 College of Health Sciences School of Nursing Pinning Ceremony, Boston","ceremony_type":"commencement","date":"2025-12-16 14:00:00","is_live":"0","key_art":"284745","livestream_page":"school-of-nursing-pinning-ceremony-boston-2025","page_url":"https://ngn.local.northeastern.edu/livestream/school-of-nursing-pinning-ceremony-boston-2025/","program_link":"https://ngn.local.northeastern.edu/wp-content/uploads/2025/12/459587_NU_Bouve_SoN_Boston_Pin_Prog_Nov2025_dr2-Final.pdf.pdf","section_heading":"Commencement 2025 - Nursing Pinning, Boston","stream_embed_url":"https://www.youtube.com/embed/y7irjNgkKBM","thumbnail":"284745","timezone":"EST","venue":"Blackman Auditorium","_idx":72},{"ceremony_title":"Bouv\u00e9 College of Health Sciences Doctorate Celebration","ceremony_type":"commencement","date":"2024-04-30 11:00:00","is_live":"0","key_art":"225936","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/bouve-doctorate-ceremony-livestream-2024/","program_link":"","section_heading":"Bouv\u00e9 College of Health Sciences Doctorate Celebration","stream_embed_url":"https://vimeo.com/event/4252615/embed","thumbnail":"225936","timezone":"EDT","venue":"Matthews Arena","_idx":73},{"ceremony_title":"Bouv\u00e9 College of Health Sciences Undergraduate Celebration","ceremony_type":"commencement","date":"2024-05-04 11:00:00","is_live":"0","key_art":"225939","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/bouve-graduation-celebration-livestream-2024","program_link":"","section_heading":"Bouv\u00e9 College of Health Sciences Undergraduate Celebration","stream_embed_url":"","thumbnail":"225939","timezone":"EDT","venue":"Matthews Arena","_idx":74},{"ceremony_title":"Bouv\u00e9 School of Nursing Pinning","ceremony_type":"commencement","date":"2024-05-02 11:00:00","is_live":"0","key_art":"225973","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/bouve-nursing-pinning-livestream-2024/","program_link":"","section_heading":"Bouv\u00e9 School of Nursing Pinning","stream_embed_url":"https://vimeo.com/event/4252695/embed","thumbnail":"225973","timezone":"EDT","venue":"Matthews Arena","_idx":75},{"ceremony_title":"Charlotte Commencement","ceremony_type":"commencement","date":"2024-06-01 11:00:00","is_live":"0","key_art":"226010","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/charlotte-commencement-livestream-2024/","program_link":"","section_heading":"Charlotte Commencement","stream_embed_url":"","thumbnail":"226010","timezone":"EDT","venue":"Halton Theater","_idx":76},{"ceremony_title":"College of Arts, Media & Design Celebration","ceremony_type":"commencement","date":"2024-05-03 11:00:00","is_live":"0","key_art":"225938","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/camd-graduation-celebration-livestream-2024/","program_link":"","section_heading":"College of Arts, Media & Design Celebration","stream_embed_url":"","thumbnail":"225938","timezone":"EDT","venue":"Matthews Arena","_idx":77},{"ceremony_title":"College of Engineering Graduate Ceremony","ceremony_type":"commencement","date":"2024-05-01 11:00:00","is_live":"0","key_art":"225988","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/coe-graduate-ceremony-livestream-2024/","program_link":"","section_heading":"College of Engineering Graduate Ceremony","stream_embed_url":"","thumbnail":"225988","timezone":"EDT","venue":"Matthews Arena","_idx":78},{"ceremony_title":"College of Engineering Undergraduate Celebration","ceremony_type":"commencement","date":"2024-05-04 11:00:00","is_live":"0","key_art":"225984","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/coe-undergraduate-ceremony-livestream-2024","program_link":"","section_heading":"College of Engineering Undergraduate Celebration","stream_embed_url":"","thumbnail":"225984","timezone":"EDT","venue":"Matthews Arena","_idx":79},{"ceremony_title":"College of Professional Studies Bachelor\u2019s & Master\u2019s Ceremonies","ceremony_type":"commencement","date":"2024-05-08 11:00:00","is_live":"0","key_art":"226004","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/cps-bachelors-graduate-ceremony-livestream-2024","program_link":"","section_heading":"College of Professional Studies Bachelor\u2019s & Master\u2019s Ceremonies","stream_embed_url":"","thumbnail":"226004","timezone":"EDT","venue":"Matthews Arena","_idx":80},{"ceremony_title":"College of Professional Studies Doctoral Hooding & Commencement","ceremony_type":"commencement","date":"2024-05-09 11:00:00","is_live":"0","key_art":"226006","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/cps-doctoral-hooding-commencement-livestream-2024/","program_link":"","section_heading":"College of Professional Studies Doctoral Hooding & Commencement","stream_embed_url":"","thumbnail":"226006","timezone":"EDT","venue":"Matthews Arena","_idx":81},{"ceremony_title":"College of Professional Studies Masters of Science Celebration","ceremony_type":"commencement","date":"2024-05-08 11:00:00","is_live":"0","key_art":"226004","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/cps-graduation-celebration-livestream-2024/","program_link":"","section_heading":"College of Professional Studies Masters of Science Celebration","stream_embed_url":"","thumbnail":"226004","timezone":"EDT","venue":"Matthews Arena","_idx":82},{"ceremony_title":"College of Science Graduate Ceremony","ceremony_type":"commencement","date":"2024-05-03 11:00:00","is_live":"0","key_art":"225996","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/cos-graduate-ceremony-livestream-2024/","program_link":"","section_heading":"College of Science Graduate Ceremony","stream_embed_url":"","thumbnail":"225996","timezone":"EDT","venue":"Matthews Arena","_idx":83},{"ceremony_title":"College of Science Undergraduate Ceremony","ceremony_type":"commencement","date":"2024-05-03 11:00:00","is_live":"0","key_art":"225994","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/cos-undergraduate-ceremony-livestream-2024/","program_link":"","section_heading":"College of Science Undergraduate Ceremony","stream_embed_url":"","thumbnail":"225994","timezone":"EDT","venue":"Matthews Arena","_idx":84},{"ceremony_title":"College of Social Sciences & Humanities Celebration","ceremony_type":"commencement","date":"2024-05-04 11:00:00","is_live":"0","key_art":"225999","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/cssh-graduation-celebration-livestream-2024/","program_link":"","section_heading":"College of Social Sciences & Humanities Celebration","stream_embed_url":"","thumbnail":"225999","timezone":"EDT","venue":"Matthews Arena","_idx":85},{"ceremony_title":"D\u2019amore-McKim School of Business Graduate Celebration","ceremony_type":"commencement","date":"2024-04-30 11:00:00","is_live":"0","key_art":"225977","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/dmsb-graduate-ceremony-livestream-2024/","program_link":"","section_heading":"D\u2019amore-McKim School of Business Graduate Celebration","stream_embed_url":"","thumbnail":"225977","timezone":"EDT","venue":"Matthews Arena","_idx":86},{"ceremony_title":"D\u2019amore-McKim School of Business Undergraduate Ceremony","ceremony_type":"commencement","date":"2024-05-02 11:00:00","is_live":"0","key_art":"225982","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/dmsb-undergraduate-ceremony-livestream-2024/","program_link":"","section_heading":"D\u2019amore-McKim School of Business Undergraduate Ceremony","stream_embed_url":"","thumbnail":"225982","timezone":"EDT","venue":"Matthews Arena","_idx":87},{"ceremony_title":"Boston Convocation 2026","ceremony_type":"convocation","date":"2026-09-08 11:00:00","is_live":"0","key_art":"308427","livestream_page":"","page_url":"","program_link":"","section_heading":"Boston Convocation 2026","stream_embed_url":"","thumbnail":"308427","timezone":"EST","venue":"MGM Music Hall","_idx":88},{"ceremony_title":"London Convocation 2026","ceremony_type":"convocation","date":"2026-09-10 11:30:00","is_live":"0","key_art":"308432","livestream_page":"","page_url":"","program_link":"","section_heading":"London Convocation 2026","stream_embed_url":"","thumbnail":"308432","timezone":"BST","venue":"Indigo at the O2","_idx":89},{"ceremony_title":"Oakland Convocation 2026 (1)","ceremony_type":"convocation","date":"2026-09-08 14:15:00","is_live":"0","key_art":"308435","livestream_page":"","page_url":"","program_link":"","section_heading":"Oakland Convocation 2026 (1)","stream_embed_url":"","thumbnail":"308435","timezone":"PST","venue":"Little Field Hall","_idx":90},{"ceremony_title":"Oakland Convocation 2026 (2)","ceremony_type":"convocation","date":"2026-09-08 16:00:00","is_live":"0","key_art":"308435","livestream_page":"","page_url":"","program_link":"","section_heading":"Oakland Convocation 2026 (2)","stream_embed_url":"","thumbnail":"308435","timezone":"PST","venue":"Little Field Hall","_idx":91},{"ceremony_title":"Doctor of Philosophy Hooding & Graduation","ceremony_type":"commencement","date":"2024-04-24 11:00:00","is_live":"0","key_art":"225916","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/doctor-of-philosophy-hooding-graduation-livestream-2024/","program_link":"","section_heading":"Doctor of Philosophy Hooding & Graduation","stream_embed_url":"","thumbnail":"226040","timezone":"EDT","venue":"Matthews Arena","_idx":92},{"ceremony_title":"John D. O\u2019Bryant African American Institute Baccalaureate 2024","ceremony_type":"commencement","date":"2024-05-03 11:00:00","is_live":"0","key_art":"226263","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/african-american-institute-baccalaureate-livestream-2024","program_link":"","section_heading":"John D. O\u2019Bryant African American Institute Baccalaureate 2024","stream_embed_url":"","thumbnail":"226263","timezone":"EDT","venue":"Matthews Arena","_idx":93},{"ceremony_title":"Khoury College of Computer Sciences Undergraduate Ceremony","ceremony_type":"commencement","date":"2024-05-02 13:00:00","is_live":"0","key_art":"225990","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/khoury-undergraduate-ceremony-livestream-2024","program_link":"","section_heading":"Khoury College of Computer Sciences Undergraduate Ceremony","stream_embed_url":"","thumbnail":"225990","timezone":"EDT","venue":"Matthews Arena","_idx":94},{"ceremony_title":"Khoury College of Computer Sciences Graduate Celebration","ceremony_type":"commencement","date":"2024-05-02 11:00:00","is_live":"0","key_art":"225992","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/khoury-graduate-ceremony-livestream-2024/","program_link":"","section_heading":"Khoury College of Computer Sciences Graduate Celebration","stream_embed_url":"","thumbnail":"225992","timezone":"EDT","venue":" Matthews Arena","_idx":95},{"ceremony_title":"Mills College at Northeastern Commencement","ceremony_type":"commencement","date":"2024-04-27 09:45:00","is_live":"0","key_art":"226012","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/oakland-commencement-livestream-2024/","program_link":"","section_heading":"Mills College at Northeastern Commencement","stream_embed_url":"https://www.youtube.com/embed/NynFZO0nuGY?si=GawejnDTM2bQcYP7","thumbnail":"226012","timezone":"PDT","venue":"Mills Campus","_idx":96},{"ceremony_title":"Portland Commencement","ceremony_type":"commencement","date":"2024-06-14 11:00:00","is_live":"0","key_art":"226042","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/portland-commencement-livestream-2024/","program_link":"","section_heading":"Portland Commencement","stream_embed_url":"","thumbnail":"226042","timezone":"EDT","venue":"Merrill Auditorium","_idx":97},{"ceremony_title":"Seattle Commencement","ceremony_type":"commencement","date":"2024-05-07 16:00:00","is_live":"0","key_art":"226044","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/seattle-commencement-livestream-2024/","program_link":"","section_heading":"Seattle Commencement","stream_embed_url":"","thumbnail":"226044","timezone":"PDT","venue":"Benaroya Hall","_idx":98},{"ceremony_title":"Silicon Valley Commencement","ceremony_type":"commencement","date":"2024-05-09 11:00:00","is_live":"0","key_art":"226045","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/sillicon-valley-commencement-livestream-2024/","program_link":"","section_heading":"Silicon Valley Commencement","stream_embed_url":"","thumbnail":"226045","timezone":"PDT","venue":"California Theatre","_idx":99},{"ceremony_title":"Toronto Commencement","ceremony_type":"commencement","date":"2024-05-23 11:00:00","is_live":"0","key_art":"226047","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/toronto-commencement-livestream-2024/","program_link":"","section_heading":"Toronto Commencement","stream_embed_url":"","thumbnail":"226047","timezone":"EDT","venue":"Meridian Hall","_idx":100},{"ceremony_title":"Vancouver Commencement","ceremony_type":"commencement","date":"2024-05-11 11:00:00","is_live":"0","key_art":"226051","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/vancouver-commencement-livestream-2024/","program_link":"","section_heading":"Vancouver Commencement","stream_embed_url":"","thumbnail":"226051","timezone":"EDT","venue":"The Centre","_idx":101},{"ceremony_title":"School of Law Commencement","ceremony_type":"commencement","date":"2024-05-10 11:00:00","is_live":"0","key_art":"226264","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/law-school-graduation-livestream-2024/","program_link":"","section_heading":"School of Law Commencement","stream_embed_url":"","thumbnail":"226264","timezone":"EDT","venue":"Matthews Arena","_idx":102},{"ceremony_title":"Live: Graduate Commencement","ceremony_type":"commencement","date":"2024-05-05 10:00:00","is_live":"0","key_art":"226824","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/graduate-commencement-livestream-updates-2024/","program_link":"","section_heading":"Live: Graduate Commencement","stream_embed_url":"","thumbnail":"226824","timezone":"EDT","venue":"Fenway Park","_idx":103},{"ceremony_title":"Live: Undergraduate Commencement","ceremony_type":"commencement","date":"2024-05-05 13:00:00","is_live":"0","key_art":"227062","livestream_page":"","page_url":"https://ngn.local.northeastern.edu/undergraduate-commencement-livestream-updates-2024/","program_link":"","section_heading":"Live: Undergraduate Commencement","stream_embed_url":"","thumbnail":"227062","timezone":"EDT","venue":"Fenway Park","_idx":104}];
+DATA.forEach((d,i) => { d._id = i; d.is_live = d.is_live === '1' ? 1 : 0; });
+BASELINE = JSON.parse(JSON.stringify(DATA));
+let dirty = new Set();          // row _ids with unsaved edits
+let structuralDirty = 0;        // adds/deletes
+function markDirty(id){ if (id !== undefined) dirty.add(id); renderPublishBar(); }
+function isDirty(){ return dirty.size > 0 || structuralDirty > 0; }
+function renderPublishBar(){
+  const bar = document.getElementById('pubbar');
+  bar.classList.toggle('on', isDirty());
+  document.getElementById('pubN').textContent =
+    `${dirty.size + structuralDirty} unsaved change${dirty.size + structuralDirty === 1 ? '' : 's'}`;
+}
+function publishAll(){
+  BASELINE = JSON.parse(JSON.stringify(DATA));
+  dirty.clear(); structuralDirty = 0;
+  renderPublishBar(); render();
+  const t = document.getElementById('toast');
+  t.textContent = 'Published. (Production: saves the options page, busts the ceremonies cache, refreshes the announcement bar.)';
+  t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 3600);
+}
+function discardAll(){
+  DATA.length = 0;
+  JSON.parse(JSON.stringify(BASELINE)).forEach(d => DATA.push(d));
+  dirty.clear(); structuralDirty = 0;
+  renderPublishBar(); render();
+}
+
+const now = Date.now();
+function statusOf(d){
+  if (d.is_live) return 'live';
+  const t = Date.parse((d.date || '').replace(' ', 'T'));
+  return (isNaN(t) || t > now - 6*3600e3) && t > now ? 'upcoming' : 'past';
+}
+function fmtDate(d){
+  const t = Date.parse((d.date || '').replace(' ', 'T'));
+  if (isNaN(t)) return d.date || '';
+  const dt = new Date(t);
+  return dt.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+    + ' · ' + dt.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+}
+
+let state = { status:'', type:'', year:'', q:'', sortK:'manual', sortDir:1, sel:new Set(), editing:null };
+
+function filtered(){
+  const q = state.q.toLowerCase();
+  let rows = DATA.filter(d =>
+    (!state.status || statusOf(d) === state.status) &&
+    (!state.type || d.ceremony_type === state.type) &&
+    (!state.year || (d.date||'').startsWith(state.year)) &&
+    (!q || [d.ceremony_title, d.section_heading, d.venue, d.livestream_page].join(' ').toLowerCase().includes(q))
+  );
+  const k = state.sortK;
+  if (k !== 'manual') {
+    rows.sort((a,b) => {
+      const av = k === '_status' ? statusOf(a) : (a[k]||'');
+      const bv = k === '_status' ? statusOf(b) : (b[k]||'');
+      return av < bv ? -state.sortDir : av > bv ? state.sortDir : 0;
+    });
+  }
+  return rows;
+}
+
+function render(){
+  const rows = filtered();
+  // status tabs w/ counts (counts respect type/year/search, not status)
+  const base = DATA.filter(d =>
+    (!state.type || d.ceremony_type === state.type) &&
+    (!state.year || (d.date||'').startsWith(state.year)) &&
+    (!state.q || [d.ceremony_title, d.section_heading, d.venue, d.livestream_page].join(' ').toLowerCase().includes(state.q.toLowerCase())));
+  const counts = {'':base.length, live:0, upcoming:0, past:0};
+  base.forEach(d => counts[statusOf(d)]++);
+  document.getElementById('statusTabs').innerHTML = [['','All'],['live','Live'],['upcoming','Upcoming'],['past','Past']]
+    .map(([v,l]) => `<button class="${state.status===v?'on':''}" onclick="setStatus('${v}')">${l}<span class="n">${counts[v]??0}</span></button>`).join('');
+
+  const canDrag = state.sortK === 'manual' && !state.status && !state.type && !state.year && !state.q;
+  document.getElementById('rows').innerHTML = rows.map(d => {
+    const st = statusOf(d);
+    const pos = DATA.indexOf(d) + 1;
+    return `<tr class="${state.sel.has(d._id)?'sel':''}" data-id="${d._id}" ${canDrag?'draggable="true"':''} onclick="openPanel(${d._id})">
+      <td onclick="event.stopPropagation()"><input type="checkbox" ${state.sel.has(d._id)?'checked':''} onchange="toggleSel(${d._id},this)"></td>
+      <td class="ordcell ${canDrag?'draggable':''}" onclick="event.stopPropagation()">${canDrag?'<span class="grip">⠿</span>':''}<span class="pos">${pos}</span></td>
+      <td onclick="event.stopPropagation()"><button class="sw ${d.is_live?'on':''}" role="switch" aria-checked="${!!d.is_live}" aria-label="Live toggle" onclick="toggleLive(${d._id})"></button></td>
+      <td><div class="titlecell">${thumbHtml(d.thumbnail || d.key_art)}<div class="title">${dirty.has(d._id)?'<span class="dot" title="Unsaved change"></span>':''}${esc(d.ceremony_title)}<span class="sub">${esc(d.livestream_page || d.section_heading || '')}</span></div></div></td>
+      <td><span class="pill type ${esc(d.ceremony_type)}">${esc(d.ceremony_type||'—')}</span></td>
+      <td class="datecell"><b>${fmtDate(d)}</b><span class="tz">${esc(d.timezone||'')}</span></td>
+      <td><span class="pill ${st}">${st.toUpperCase()}</span></td>
+      <td>${esc(d.venue || '—')}</td>
+      <td><span class="assets">
+        <span class="${d.stream_embed_url?'ok':''}" title="Stream embed">S</span>
+        <span class="${d.program_link?'ok':''}" title="Program">P</span>
+        <span class="${d.key_art?'ok':''}" title="Key art">A</span>
+      </span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('empty').hidden = rows.length > 0;
+  document.getElementById('count').textContent = `${rows.length} of ${DATA.length} ceremonies`;
+  document.querySelectorAll('thead th[data-k]').forEach(th => {
+    th.querySelector('.dir').textContent = th.dataset.k === state.sortK ? (state.sortDir > 0 ? '▲' : '▼') : '';
+  });
+  document.getElementById('manualBtn').style.display = state.sortK === 'manual' ? 'none' : '';
+  bindDrag();
+  const bulk = document.getElementById('bulk');
+  bulk.classList.toggle('on', state.sel.size > 0);
+  document.getElementById('bulkN').textContent = `${state.sel.size} selected`;
+}
+
+function esc(s){ return (s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function thumbHtml(id){
+  const u = ATT[id];
+  return u ? `<img class="thumb" src="${u}?w=120" alt="" loading="lazy">` : `<span class="thumb">—</span>`;
+}
+function setStatus(v){ state.status = v; render(); }
+function toggleSel(id, cb){ cb.checked ? state.sel.add(id) : state.sel.delete(id); render(); }
+function toggleAll(cb){ state.sel = cb.checked ? new Set(filtered().map(d=>d._id)) : new Set(); render(); }
+function toggleLive(id){ const d = DATA.find(x=>x._id===id); d.is_live = d.is_live ? 0 : 1; markDirty(id); render(); }
+function bulkLive(v){ state.sel.forEach(id => { const d = DATA.find(x=>x._id===id); if(d){ d.is_live = v ? 1 : 0; dirty.add(id); } }); state.sel.clear(); renderPublishBar(); render(); }
+function bulkDelete(){ [...state.sel].forEach(id => { const i = DATA.findIndex(d=>d._id===id); if(i>-1){ DATA.splice(i,1); structuralDirty++; } }); state.sel.clear(); renderPublishBar(); render(); }
+
+/* ---- slide-over ---- */
+const TZS = ['BST','EDT','EST','CDT','MDT','PDT','PST']; // exact ACF field choices
+const REQUIRED = ['ceremony_title','section_heading','venue','date','timezone'];
+const FIELDS = [
+  ['ceremony_title','Ceremony title *','text'],
+  ['section_heading','Section heading *','text'],
+  ['ceremony_type','Type','select'],
+  ['date','Date & time *','datetime'],
+  ['timezone','Timezone','tz'],
+  ['venue','Venue *','text'],
+  ['stream_embed_url','Stream embed URL','url'],
+  ['program_link','Program link','url'],
+  ['livestream_page','Livestream page (ID/slug)','text'],
+  ['page_url','Page URL','url'],
+  ['key_art','Key art','image'],
+  ['thumbnail','Thumbnail','image'],
+];
+function openPanel(id){
+  state.editing = id;
+  const d = id === null ? {ceremony_title:'', ceremony_type:'convocation', is_live:0} : DATA.find(x=>x._id===id);
+  document.getElementById('ptitle').textContent = id === null ? 'New ceremony' : d.ceremony_title;
+  document.getElementById('pbody').innerHTML = `
+    <div class="livefld"><button class="sw ${d.is_live?'on':''}" role="switch" aria-checked="${!!d.is_live}" id="pLive" onclick="this.classList.toggle('on')"></button>
+      <b>Live now</b><p class="hint">Auto-enables 7 a.m.&ndash;start on event day (cron), or flip manually.</p></div>
+    ${FIELDS.map(([k,l,t]) => {
+      if (t === 'select') return `<div class="fld"><label>${l}</label><select id="f_${k}">
+           <option ${d[k]==='commencement'?'selected':''}>commencement</option>
+           <option ${d[k]==='convocation'?'selected':''}>convocation</option></select></div>`;
+      if (t === 'datetime') {
+        const v = (d[k]||'').replace(' ', 'T').slice(0, 16);
+        return `<div class="fldrow"><div class="fld"><label>${l}</label><input id="f_${k}" type="datetime-local" value="${v}"></div>
+          <div class="fld"><label>Timezone</label><select id="f_timezone">
+            ${TZS.map(z => `<option ${d.timezone===z?'selected':''}>${z}</option>`).join('')}
+          </select></div></div>`;
+      }
+      if (t === 'tz') return '';
+      if (t === 'image') {
+        const u = ATT[d[k]];
+        return `<div class="fld"><label>${l}</label>
+          <div class="imgfld">
+            ${u ? `<img src="${u}?w=400" alt="" loading="lazy">` : `<div class="imgfld__empty">No image</div>`}
+            <div class="imgfld__meta">
+              <span>${u ? u.split('/').pop() : 'Not set'}</span>
+              <span class="hint">ID <input id="f_${k}" type="text" value="${esc(d[k]||'')}" style="width:90px;display:inline-block;padding:3px 6px"> · <button type="button" class="linklike" onclick="alert('Opens the WP media library (mock)')">Replace</button></span>
+            </div>
+          </div></div>`;
+      }
+      return `<div class="fld"><label>${l}</label><input id="f_${k}" type="text" value="${esc(d[k]||'')}"></div>`;
+    }).join('')}
+  `;
+  document.getElementById('pbody').insertAdjacentHTML('beforeend', '<p class="perr" id="perr"></p>');
+  const warn = () => {
+    const t = document.getElementById('f_ceremony_title').value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    const lp = document.getElementById('f_livestream_page').value.trim().toLowerCase();
+    const msgs = [];
+    if (t && DATA.some(x => x._id !== state.editing && (x.ceremony_title||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-') === t))
+      msgs.push('Another ceremony has this title (current identity key; duplicates collide in the live-timestamp and cron state).');
+    if (lp && DATA.some(x => x._id !== state.editing && (x.livestream_page||'').trim().toLowerCase() === lp))
+      msgs.push('Another ceremony uses this livestream page slug; slugs must stay unique.');
+    document.getElementById('perr').textContent = msgs.join(' ');
+  };
+  document.getElementById('f_ceremony_title').addEventListener('input', warn);
+  document.getElementById('f_livestream_page').addEventListener('input', warn);
+  document.getElementById('panel').classList.add('on');
+  document.getElementById('scrim').classList.add('on');
+}
+function closePanel(){
+  document.getElementById('panel').classList.remove('on');
+  document.getElementById('scrim').classList.remove('on');
+  state.editing = null;
+}
+function savePanel(){
+  // required-field validation (mirrors the ACF field settings)
+  let bad = [];
+  REQUIRED.forEach(k => {
+    const el = document.getElementById(k === 'timezone' ? 'f_timezone' : 'f_'+k);
+    if (el && !el.value.trim()) { bad.push(k); el.style.borderColor = 'var(--red)'; }
+    else if (el) el.style.borderColor = '';
+  });
+  if (bad.length) { document.getElementById('perr').textContent = 'Required: ' + bad.join(', '); return; }
+
+  let d;
+  if (state.editing === null) { d = {_id: DATA.length ? Math.max(...DATA.map(x=>x._id))+1 : 0, is_live:0}; DATA.unshift(d); structuralDirty++; }
+  else d = DATA.find(x=>x._id===state.editing);
+  FIELDS.forEach(([k, l, t]) => {
+    const el = document.getElementById('f_'+k);
+    if (!el) return;
+    d[k] = t === 'datetime' ? el.value.replace('T', ' ') + (el.value.length === 16 ? ':00' : '') : el.value;
+  });
+  d.timezone = document.getElementById('f_timezone').value;
+  d.is_live = document.getElementById('pLive').classList.contains('on') ? 1 : 0;
+  if (state.editing !== null) dirty.add(d._id);
+  renderPublishBar(); closePanel(); render();
+}
+
+function duplicateCurrent(){
+  if (state.editing === null) return;
+  const src = DATA.find(x=>x._id===state.editing);
+  const copy = JSON.parse(JSON.stringify(src));
+  copy._id = Math.max(...DATA.map(x=>x._id)) + 1;
+  copy.ceremony_title = (copy.ceremony_title || '') + ' (copy)';
+  copy.is_live = 0;
+  const i = DATA.findIndex(x=>x._id===state.editing);
+  DATA.splice(i + 1, 0, copy);
+  structuralDirty++;
+  renderPublishBar(); closePanel(); render();
+}
+function deleteCurrent(){
+  if (state.editing !== null) { const i = DATA.findIndex(d=>d._id===state.editing); if(i>-1){ DATA.splice(i,1); structuralDirty++; } }
+  renderPublishBar(); closePanel(); render();
+}
+
+/* drag to reorder (manual view only) */
+let dragId = null;
+function bindDrag(){
+  document.querySelectorAll('tbody tr[draggable]').forEach(tr => {
+    tr.addEventListener('dragstart', e => { dragId = +tr.dataset.id; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+    tr.addEventListener('dragend', () => { dragId = null; document.querySelectorAll('.dragging,.dropline').forEach(x => x.classList.remove('dragging','dropline')); });
+    tr.addEventListener('dragover', e => {
+      e.preventDefault();
+      document.querySelectorAll('.dropline').forEach(x => x.classList.remove('dropline'));
+      tr.classList.add('dropline');
+    });
+    tr.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetId = +tr.dataset.id;
+      if (dragId === null || dragId === targetId) return;
+      const from = DATA.findIndex(d => d._id === dragId);
+      const [moved] = DATA.splice(from, 1);
+      const to = DATA.findIndex(d => d._id === targetId);
+      DATA.splice(to + (from < to ? 1 : 0), 0, moved);
+      structuralDirty++;
+      renderPublishBar(); render();
+    });
+  });
+}
+
+/* filters */
+document.getElementById('q').addEventListener('input', e => { state.q = e.target.value; render(); });
+document.getElementById('typeFlt').addEventListener('change', e => { state.type = e.target.value; render(); });
+document.getElementById('yearFlt').addEventListener('change', e => { state.year = e.target.value; render(); });
+[...new Set(DATA.map(d=>d.ceremony_type).filter(Boolean))].sort().forEach(t =>
+  document.getElementById('typeFlt').insertAdjacentHTML('beforeend', `<option>${t}</option>`));
+[...new Set(DATA.map(d=>(d.date||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort().reverse().forEach(y =>
+  document.getElementById('yearFlt').insertAdjacentHTML('beforeend', `<option>${y}</option>`));
+document.querySelectorAll('thead th[data-k]').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.k;
+  if (state.sortK === k) state.sortDir *= -1; else { state.sortK = k; state.sortDir = 1; }
+  render();
+}));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+render();
+</script>
+</body>
+</html>
