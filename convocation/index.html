@@ -117,29 +117,30 @@
     background:rgba(255,255,255,.75);padding:1px 6px;border-radius:4px}
   .proto-map:hover .chip{background:var(--ngn-v2-sys-color-primary,#c8102e);color:#fff;transition:.2s}
 
-  /* stories: 4-col stacked cards on desktop; "The Latest" horizontal rows on mobile */
-  .proto-latest .story-link__link{text-decoration:none;color:inherit}
-  .proto-latest .headline{margin:0}
-  .proto-latest .post-meta__pubdate{font-size:12.5px;color:var(--ngn-v2-sys-color-on-surface-variant,#6e6e6e)}
-  .proto-latest .story-link__link:hover .headline{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
-  .proto-dek{margin:8px 0 0;font-family:var(--wp--preset--font-family--body,Lato,sans-serif);
-    font-size:14px;line-height:1.5;color:var(--ngn-v2-sys-color-on-surface-variant,#6e6e6e)}
-  @media(width >= 782px){
-    .proto-latest{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-    .proto-latest .story-link__media img{width:100%;aspect-ratio:3/2;object-fit:cover;display:block}
-    .proto-latest .story-link__media{margin-bottom:16px}
-    .proto-latest .post-meta{margin-top:8px}
-  }
-  @media(width <= 781px){
-    .proto-latest{display:grid;grid-template-columns:1fr;row-gap:0}
-    .proto-latest__item{border-bottom:1px solid var(--ngn-v2-sys-color-outline-variant,#e2e2e2);padding-block:18px}
-    .proto-latest__item .story-link__link{display:flex;flex-direction:row-reverse;gap:18px;align-items:flex-start;justify-content:space-between}
-    .proto-latest__item .story-link__media{flex:0 0 131px}
-    .proto-latest__item .story-link__media img{width:131px;height:87px;object-fit:cover;display:block}
-    .proto-latest__item .story-link__text{min-width:0;flex:1}
-    .proto-latest__item .proto-dek{display:none}
-    .proto-latest__item .post-meta{margin-top:10px}
-  }
+  /* stories: featured lead + secondary list (category-redesign featured section) */
+  .proto-featured{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(28px,4vw,52px);align-items:start}
+  @media(width <= 781px){.proto-featured{grid-template-columns:1fr;gap:clamp(22px,5vw,30px)}}
+  .proto-featured__lead{display:block;text-decoration:none;color:inherit}
+  .proto-featured__media{margin-bottom:18px;overflow:hidden}
+  .proto-featured__media img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}
+  .proto-featured__hed{font-size:clamp(24px,2.5vw,31px);line-height:1.18;margin:0}
+  .proto-featured__dek{margin:12px 0 0;font-family:var(--wp--preset--font-family--body,Lato,sans-serif);
+    font-size:15px;line-height:1.5;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
+  .proto-featured__date{display:block;margin-top:12px;font-family:var(--wp--preset--font-family--body,Lato,sans-serif);
+    font-size:12.5px;color:var(--ngn-v2-sys-color-on-surface-variant,#6e6e6e)}
+  .proto-featured__lead:hover .proto-featured__hed{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+  .proto-featured__list{display:flex;flex-direction:column}
+  .proto-frow{display:flex;gap:20px;justify-content:space-between;align-items:flex-start;
+    text-decoration:none;color:inherit;padding:20px 0;border-top:1px solid var(--ngn-v2-sys-color-outline-variant,#e2e2e2)}
+  .proto-frow:first-child{border-top:0;padding-top:0}
+  .proto-frow__text{min-width:0}
+  .proto-frow__hed{font-size:18px;line-height:1.25;margin:0}
+  .proto-frow--lead .proto-frow__hed{font-size:clamp(20px,1.9vw,23px)}
+  .proto-frow__date{display:block;margin-top:8px;font-family:var(--wp--preset--font-family--body,Lato,sans-serif);
+    font-size:12.5px;color:var(--ngn-v2-sys-color-on-surface-variant,#6e6e6e)}
+  .proto-frow__media{flex:0 0 clamp(88px,9vw,104px)}
+  .proto-frow__media img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+  .proto-frow:hover .proto-frow__hed{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 
   /* overlay story card (image background, headline over bottom gradient) */
   .proto-storycard{position:relative;display:block;overflow:hidden;border-radius:var(--wp--custom--radius--medium,12px);
@@ -164,26 +165,23 @@
   .proto-sprow{display:grid;grid-template-columns:auto 1fr auto 26px;align-items:end;
     column-gap:clamp(14px,1.5vw,22px);padding:clamp(16px,1.9vw,22px) 2px;
     border-bottom:1px solid rgba(255,255,255,.15)}
-  .proto-sprow__media{width:clamp(70px,7.2vw,91px);aspect-ratio:1/1;overflow:hidden;background:#222;
+  .proto-sprow__media{width:clamp(84px,8.6vw,109px);aspect-ratio:1/1;overflow:hidden;background:#222;
     display:flex;align-items:center;justify-content:center}
   .proto-sprow__media img{width:100%;height:100%;object-fit:cover;filter:grayscale(1)}
   .proto-sprow__media svg{width:40%;height:40%;fill:#4a4a4a}
   .proto-sprow__name{font-weight:400;font-size:clamp(24px,3vw,34px);line-height:.98;margin:0;color:#fff}
   .proto-sprow__role{font-family:Lato,sans-serif;font-size:14px;line-height:1.35;margin:0;
-    max-width:240px;text-align:right;color:rgba(255,255,255,.6)}
+    white-space:nowrap;text-align:right;color:rgba(255,255,255,.6)}
   .proto-sprow__li{display:inline-flex;justify-self:end;color:rgba(255,255,255,.55);transition:color .15s}
   .proto-sprow__li svg{width:22px;height:22px;fill:currentColor}
   .proto-sprow__li:hover,.proto-sprow__li:focus-visible{color:#fff}
   @media(width <= 599px){
     .proto-sprow{grid-template-columns:auto 1fr 26px;column-gap:16px;align-items:stretch}
-    .proto-sprow__media{grid-row:1/3;align-self:center;width:clamp(74px,20vw,91px)}
+    .proto-sprow__media{grid-row:1/3;align-self:center;width:clamp(89px,24vw,109px)}
     .proto-sprow__name{grid-column:2;grid-row:1;align-self:start}
     .proto-sprow__li{grid-column:3;grid-row:1;align-self:start}
-    .proto-sprow__role{grid-column:2/4;grid-row:2;align-self:end;text-align:left;max-width:none}
+    .proto-sprow__role{grid-column:2/4;grid-row:2;align-self:end;text-align:left;white-space:normal}
   }
-
-  /* flat corners — remove all border radius on every component */
-  *,*::before,*::after{border-radius:0 !important}
 
   /* photo carousel — centered focus, infinite, autoplay; arrows below */
   .proto-slider-shell{margin-top:var(--proto-headgap)}
@@ -204,8 +202,8 @@
 
   /* social embeds — same grid treatment as the commencement page */
   .proto-embeds{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    column-gap:100px;row-gap:28px;justify-items:center}
-  .proto-embeds iframe{background:#fff;max-width:336px;width:calc(100% - 2px);
+    gap:20px;justify-items:stretch}
+  .proto-embeds iframe{background:#fff;max-width:none;width:100%;
     border:1px solid #dbdbdb;display:block}
 
   /* generic card grids built from ngn-card */
@@ -242,8 +240,8 @@
   .proto-wrap{max-width:var(--proto-w,1080px);margin-inline:auto;padding-inline:clamp(20px,3vw,32px)}
   :root{--proto-w:1080px;--proto-headgap:clamp(22px,3.5vw,40px)}
   .site-footer{margin-block-start:0;display:flow-root}
-  .site-footer > .wrapper{max-width:1280px;width:auto;box-sizing:content-box;
-    margin-inline:auto;padding-inline:clamp(20px,3vw,32px)} /* T15: matches site header extra-extra-wide */ /* contain .wrapper margin that collapses into a white gap */
+  .site-footer > .wrapper{max-width:var(--proto-w,1080px);width:auto;box-sizing:content-box;
+    margin-inline:auto;padding-inline:clamp(20px,3vw,32px)} /* match the 1080px content width used across the page */
   #speakers{max-width:none;margin:0} /* commencement microsite CSS in the bundle pins this id to 1100px */
   .proto-btn-white{background:#fff;color:#191919}
   .proto-btn-white:hover{background:#ececec}
@@ -846,25 +844,28 @@ function secSpeakers(c){
   </div>`;
 }
 
-function storyCard(st){
-  return `<div class="story-link has-regular-headline-style has-regular-headline-size proto-latest__item">
-    <a href="${st.href}" class="story-link__link" target="_blank" rel="noopener">
-      <div class="story-link__media"><div class="story-link__media-wrapper"><img src="${st.img}" alt="" loading="lazy"></div></div>
-      <div class="story-link__text">
-        <h2 class="headline">${st.t}</h2>
-        ${st.dek ? `<p class="proto-dek">${st.dek}</p>` : ''}
-        <div class="post-meta"><div class="post-meta__body"><time class="post-meta__pubdate">${st.d}</time></div></div>
-      </div>
-    </a>
-  </div>`;
-}
-
 function secStories(c){
+  const [lead, ...rest] = c.stories;
   return `<section id="stories" class="proto-band">
     <div class="proto-wrap">
       ${sectionHead('Latest stories')}
-      <div class="proto-latest" style="margin-top:var(--proto-headgap)">
-        ${c.stories.map(storyCard).join('')}
+      <div class="proto-featured" style="margin-top:var(--proto-headgap)">
+        <a class="proto-featured__lead" href="${lead.href}" target="_blank" rel="noopener">
+          <div class="proto-featured__media"><img src="${lead.img}" alt="" loading="lazy"></div>
+          <h3 class="proto-featured__hed proto-kepler">${lead.t}</h3>
+          ${lead.dek?`<p class="proto-featured__dek">${lead.dek}</p>`:''}
+          <time class="proto-featured__date">${lead.d}</time>
+        </a>
+        <div class="proto-featured__list">
+          ${rest.map((st,i)=>`
+          <a class="proto-frow${i===0?' proto-frow--lead':''}" href="${st.href}" target="_blank" rel="noopener">
+            <div class="proto-frow__text">
+              <h4 class="proto-frow__hed proto-kepler">${st.t}</h4>
+              <time class="proto-frow__date">${st.d}</time>
+            </div>
+            ${i>0?`<div class="proto-frow__media"><img src="${st.img}" alt="" loading="lazy"></div>`:''}
+          </a>`).join('')}
+        </div>
       </div>
     </div>
   </section>`;
