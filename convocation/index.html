@@ -162,6 +162,22 @@
     overflow:hidden;display:flex;align-items:center;justify-content:center}
   .proto-feature__media img{width:100%;height:100%;object-fit:cover}
   .proto-feature__media svg{width:22%;height:22%;fill:#D9D9D9}
+  .proto-feature--stacked + .proto-feature--stacked{margin-top:clamp(36px,5vw,64px)}
+  @media(width >= 782px){
+    .proto-feature--rev{grid-template-columns:minmax(320px,400px) 1fr}
+    .proto-feature--rev .proto-feature__media{order:-1}
+  }
+
+  /* speaker roster: headshot cards, rows centered so 3+ wrap into balanced rows */
+  .proto-speakers{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(24px,3vw,40px)}
+  .proto-speaker{flex:0 1 180px;text-align:center}
+  .proto-speaker__media{aspect-ratio:4/5;background:#E9E9E9;border-radius:var(--wp--custom--radius--medium,12px);
+    overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0 0 16px}
+  .proto-speaker__media img{width:100%;height:100%;object-fit:cover}
+  .proto-speaker__media svg{width:34%;height:34%;fill:#D9D9D9}
+  .proto-speaker__name{font-size:20px;line-height:1.2;margin:0}
+  .proto-speaker__cred{font-family:Lato,sans-serif;font-size:13.5px;line-height:1.4;margin:6px 0 0;
+    color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
 
   /* photo carousel — centered focus, infinite, autoplay; arrows below */
   .proto-slider-shell{margin-top:var(--proto-headgap)}
@@ -551,8 +567,9 @@ const CAMPUSES = {
     transit:'Green Line to Kenmore is a five-minute walk. Doors on Lansdowne Street, next to Fenway Park.',
     hero:IMG.crowd, heroCred:'Photo by Jodi King for Northeastern University',
     thumb:IMG.crowd,
-    speaker:{name:'Hilary Duff', title:'Artist, Actress, Entrepreneur',
-      bio:'Hilary Duff is a musician, actress and entrepreneur. She first rose to fame as the titular star of the Disney Channel TV series \u201cLizzie McGuire,\u201d and kicked off her music career with 2003\u2019s four times platinum \u201cMetamorphosis.\u201d Since then, she has continued to find success as a singer, author, producer and philanthropist. Through her entrepreneurial drive and creative talent across multiple industries, she has become a household name for many.'},
+    speakers:[
+      {name:'Samantha Johnson', cred:'E\u201921, MS\u201921 \u00b7 2022 Women Who Empower Innovator'},
+    ],
     sessions:[{label:'Boston Convocation', sub:'MGM Music Hall at Fenway · 11 a.m. ET'}],
     stories:[
       {t:'Moving day', img:IMG.movein1, d:'Aug. 27, 2025', href:'https://news.northeastern.edu/2025/08/27/moving-day-3/', dek:'Family members help incoming students move in on Northeastern’s Boston campus.'},
@@ -576,6 +593,13 @@ const CAMPUSES = {
     transit:'One block from Times Square. Take the 1/2/3, N/Q/R/W or 7 to Times Sq-42 St, or the B/D/F/M to 42 St-Bryant Park.',
     hero:IMG.movein2, heroCred:'Photo by Matthew Modoono/Northeastern University',
     thumb:IMG.movein2,
+    speakers:[
+      {name:'Amelia Brooks', cred:'DMSB’26'},
+      {name:'Steve Cody', cred:'LA’77'},
+      {name:'Quinn Litherland', cred:'DMSB’22'},
+      {name:'Margaret Montavon', cred:'MMC’12, MEd’19 · 2026 Women Who Empower Innovator Award Winner'},
+      {name:'Elizabeth Raia', cred:'MMC’13 · 2026 Women Who Empower Innovator Award Winner'},
+    ],
     sessions:[{label:'New York City Convocation', sub:'The Town Hall · 2 p.m. ET'}],
     stories:[
       {t:'Every move matters', img:IMG.husky101, d:'July 13, 2026', href:'https://news.northeastern.edu/2026/07/13/every-move-matters/', dek:'Incoming student Rocky Shan contemplates his next move during a game of giant Connect 4 at Husky 101 Orientation.'},
@@ -599,6 +623,13 @@ const CAMPUSES = {
     transit:'Outdoors on the Oakland campus, following the Taste of Oakland on the Oval. A short walk from visitor parking.',
     hero:IMG.oakConv, heroCred:'Photo by Ruby Wallau for Northeastern University',
     thumb:IMG.oakConv,
+    speakers:[
+      {name:'Abhi Balakrishnan', cred:'DMSB’20'},
+      {name:'Diego Rivas', cred:'E’16'},
+      {name:'Madison Oppenheim', cred:'BHS’23, PharmD’24'},
+      {name:'Kushal Shankar', cred:'Khoury’25'},
+      {name:'Kelsey Lawler', cred:'DMSB’18'},
+    ],
     sessions:[{label:'Oakland Convocation', sub:'Holmgren Meadow · 3 p.m. PT'}],
     stories:[
       {t:'Taste of Oakland', img:IMG.oakTaste, d:'Sept. 3, 2025', href:'https://news.northeastern.edu/2025/09/03/taste-of-oakland/', dek:'Students wear screen-printed shirts by Olive Street Agency during Fall Orientation Week on the Oakland campus.'},
@@ -622,6 +653,10 @@ const CAMPUSES = {
     transit:'North Greenwich station (Jubilee line) is a five-minute walk. indigo is inside The O2 main entrance, on the left.',
     hero:IMG.lonWelc, heroCred:'Photo by Alyssa Stone/Northeastern University',
     thumb:IMG.lonWelc,
+    speakers:[
+      {name:'Elena Megalou', cred:'AMD’15 · Young Global Leader'},
+      {name:'Stella Megalou', cred:'AMD’18 · Young Global Leader'},
+    ],
     sessions:[{label:'London Convocation', sub:'indigo at The O2 · 11:30 a.m. BST'}],
     stories:[
       {t:'The tipping point', img:IMG.lonWelc, d:'June 30, 2025', href:'https://news.northeastern.edu/2025/06/30/the-tipping-point/', dek:'New Huskies play Jenga on Krentzman Quad during Welcome Student Orientation.'},
@@ -721,7 +756,7 @@ function heroCover(c){
       </div>
       <div class="proto-ctas">
         <a class="ngn-button proto-btn-white is-size-sm is-shape-round" href="#go" data-anchor="go"><span class="ngn-button__label">Getting there</span></a>
-        <a class="ngn-button is-mode-outlined-inverse is-size-sm is-shape-round" href="#speakers" data-anchor="speakers"><span class="ngn-button__label">Meet the speaker</span></a>
+        <a class="ngn-button is-mode-outlined-inverse is-size-sm is-shape-round" href="#speakers" data-anchor="speakers"><span class="ngn-button__label">Meet the speaker${c.speakers&&c.speakers.length>1?'s':''}</span></a>
       </div>
     </div>
   </div>`;
@@ -784,21 +819,38 @@ function secGo(c){
   </div>`;
 }
 
+function speakerMedia(sp, cls){
+  return `<div class="${cls}" role="img" aria-label="${sp.name} headshot${sp.img?'':' placeholder'}">${sp.img?`<img src="${sp.img}" alt="">`:svgPerson}</div>`;
+}
 function secSpeakers(c){
-  const sp = c.speaker || {name:'Speaker to be announced', title:'Northeastern alum',
-    bio:`A Northeastern graduate returns to welcome the Class of 2030. Headshot, name, title and bio will appear here once the ${c.city} speaker is confirmed.`};
-  return `<div id="speakers" class="has-surface-container-low-color-scheme proto-band">
-    <div class="proto-wrap">
-      <div class="proto-feature">
+  const list = (c.speakers && c.speakers.length) ? c.speakers
+    : [{name:'Speaker to be announced', cred:`Headshot and name will appear here once the ${c.city} speaker is confirmed.`}];
+  const many = list.length > 2;
+  const eyebrow = `Convocation speaker${list.length>1?'s':''}`;
+  let body;
+  if(many){
+    // headshot grid — rows center, so 5 sits as one row on desktop and wraps to centered rows below
+    body = `<p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase proto-sechead" style="margin:0 0 var(--proto-headgap);color:var(--ngn-v2-sys-color-primary,#c8102e)">${eyebrow}</p>
+      <div class="proto-speakers">${list.map(sp=>`
+        <div class="proto-speaker">
+          ${speakerMedia(sp,'proto-speaker__media')}
+          <p class="proto-speaker__name proto-kepler">${sp.name}</p>
+          <p class="proto-speaker__cred">${sp.cred||''}</p>
+        </div>`).join('')}</div>`;
+  } else {
+    // feature layout — one big split per speaker, alternating sides
+    body = list.map((sp,i)=>`
+      <div class="proto-feature${i%2?' proto-feature--rev':''}${list.length>1?' proto-feature--stacked':''}">
         <div>
-          <p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase" style="margin:0 0 12px;color:var(--ngn-v2-sys-color-primary,#c8102e)">Convocation speaker</p>
+          ${i===0?`<p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase" style="margin:0 0 12px;color:var(--ngn-v2-sys-color-primary,#c8102e)">${eyebrow}</p>`:''}
           <h2 class="wp-block-heading proto-kepler is-size-28" style="margin:0">${sp.name}</h2>
-          <p class="is-family-sans is-weight-bold is-size-15" style="margin:10px 0 0">${sp.title}</p>
-          <p class="is-size-15 has-line-height-24" style="margin:18px 0 0;max-width:58ch;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)">${sp.bio}</p>
+          <p class="is-family-sans is-weight-bold is-size-15" style="margin:12px 0 0;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)">${sp.cred||''}</p>
         </div>
-        <div class="proto-feature__media" role="img" aria-label="${sp.name} headshot${sp.img?'':' coming soon'}">${sp.img?`<img src="${sp.img}" alt="">`:svgPerson}</div>
-      </div>
-    </div>
+        ${speakerMedia(sp,'proto-feature__media')}
+      </div>`).join('');
+  }
+  return `<div id="speakers" class="has-surface-container-low-color-scheme proto-band">
+    <div class="proto-wrap">${body}</div>
   </div>`;
 }
 
@@ -984,7 +1036,7 @@ function currentRoute(){
   return CAMPUSES[h] ? h : 'splash';
 }
 
-const SECTIONS = [['go','Getting There'],['speakers','Speaker'],
+const SECTIONS = [['go','Getting There'],['speakers','Speakers'],
                   ['stories','Stories'],['photos','Photos'],['social','Social']];
 
 function render(){
