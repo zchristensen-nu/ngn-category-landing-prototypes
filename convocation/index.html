@@ -155,29 +155,30 @@
   .proto-cards--2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
   @media(width <= 781px){.proto-cards--2{grid-template-columns:1fr}}
 
-  /* speaker feature: content left, image right (alternate per speaker in the build) */
-  .proto-feature{display:grid;grid-template-columns:1fr minmax(320px,400px);gap:clamp(28px,4vw,48px);align-items:center}
-  @media(width <= 781px){.proto-feature{grid-template-columns:1fr;max-width:440px;margin-inline:auto}}
-  .proto-feature__media{aspect-ratio:4/5;background:#E9E9E9;border-radius:var(--wp--custom--radius--medium,12px);
-    overflow:hidden;display:flex;align-items:center;justify-content:center}
-  .proto-feature__media img{width:100%;height:100%;object-fit:cover}
-  .proto-feature__media svg{width:22%;height:22%;fill:#D9D9D9}
-  .proto-feature--stacked + .proto-feature--stacked{margin-top:clamp(36px,5vw,64px)}
-  @media(width >= 782px){
-    .proto-feature--rev{grid-template-columns:minmax(320px,400px) 1fr}
-    .proto-feature--rev .proto-feature__media{order:-1}
+  /* dark speaker section */
+  .proto-band--dark{background:#000;color:#fff}
+  .proto-band--dark .proto-kepler,.proto-band--dark .wp-block-heading{color:#fff}
+
+  /* solo speaker: centered headshot beside name/credential */
+  .proto-solo{display:flex;align-items:center;justify-content:center;gap:clamp(24px,4vw,44px);
+    max-width:640px;margin-inline:auto}
+  .proto-solo__media{flex:0 0 clamp(200px,30vw,280px)}
+  .proto-solo__cred{font-family:Lato,sans-serif;font-weight:700;font-size:15px;line-height:1.4;
+    margin:12px 0 0;color:rgba(255,255,255,.66)}
+  @media(width <= 599px){
+    .proto-solo{flex-direction:column;text-align:center;max-width:320px}
+    .proto-solo__media{width:min(100%,280px)}
   }
 
-  /* speaker roster: headshot cards, rows centered so 3+ wrap into balanced rows */
-  .proto-speakers{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(24px,3vw,40px)}
-  .proto-speaker{flex:0 1 180px;text-align:center}
-  .proto-speaker__media{aspect-ratio:4/5;background:#E9E9E9;border-radius:var(--wp--custom--radius--medium,12px);
-    overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0 0 16px}
+  /* speaker roster: square headshots, rows centered so 3+ wrap into balanced rows */
+  .proto-speakers{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(20px,2.4vw,32px)}
+  .proto-speaker{flex:0 1 190px;text-align:left}
+  .proto-speaker__media{aspect-ratio:1/1;background:#222;border-radius:0;
+    overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0 0 14px}
   .proto-speaker__media img{width:100%;height:100%;object-fit:cover}
-  .proto-speaker__media svg{width:34%;height:34%;fill:#D9D9D9}
-  .proto-speaker__name{font-size:20px;line-height:1.2;margin:0}
-  .proto-speaker__cred{font-family:Lato,sans-serif;font-size:13.5px;line-height:1.4;margin:6px 0 0;
-    color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
+  .proto-speaker__media svg{width:34%;height:34%;fill:#4a4a4a}
+  .proto-speaker__name{font-family:Lato,sans-serif;font-weight:700;font-size:16px;line-height:1.25;margin:0;color:#fff}
+  .proto-speaker__cred{font-family:Lato,sans-serif;font-size:13px;line-height:1.4;margin:5px 0 0;color:rgba(255,255,255,.62)}
 
   /* photo carousel — centered focus, infinite, autoplay; arrows below */
   .proto-slider-shell{margin-top:var(--proto-headgap)}
@@ -568,7 +569,7 @@ const CAMPUSES = {
     hero:IMG.crowd, heroCred:'Photo by Jodi King for Northeastern University',
     thumb:IMG.crowd,
     speakers:[
-      {name:'Samantha Johnson', cred:'E\u201921, MS\u201921 \u00b7 2022 Women Who Empower Innovator'},
+      {name:'Samantha Johnson', cred:'E\u201921, MS\u201921 \u00b7 2022 Women Who Empower Innovator', img:'speakers/samantha-johnson.jpg'},
     ],
     sessions:[{label:'Boston Convocation', sub:'MGM Music Hall at Fenway · 11 a.m. ET'}],
     stories:[
@@ -594,11 +595,11 @@ const CAMPUSES = {
     hero:IMG.movein2, heroCred:'Photo by Matthew Modoono/Northeastern University',
     thumb:IMG.movein2,
     speakers:[
-      {name:'Amelia Brooks', cred:'DMSB’26'},
-      {name:'Steve Cody', cred:'LA’77'},
-      {name:'Quinn Litherland', cred:'DMSB’22'},
-      {name:'Margaret Montavon', cred:'MMC’12, MEd’19 · 2026 Women Who Empower Innovator Award Winner'},
-      {name:'Elizabeth Raia', cred:'MMC’13 · 2026 Women Who Empower Innovator Award Winner'},
+      {name:'Amelia Brooks', cred:'DMSB’26', img:'speakers/amelia-brooks.jpg'},
+      {name:'Steve Cody', cred:'LA’77', img:'speakers/steve-cody.jpg'},
+      {name:'Quinn Litherland', cred:'DMSB’22', img:'speakers/quinn-litherland.jpg'},
+      {name:'Margaret Montavon', cred:'MMC’12, MEd’19 · 2026 Women Who Empower Innovator Award Winner', img:'speakers/margaret-montavon.jpg'},
+      {name:'Elizabeth Raia', cred:'MMC’13 · 2026 Women Who Empower Innovator Award Winner', img:'speakers/elizabeth-raia.jpg'},
     ],
     sessions:[{label:'New York City Convocation', sub:'The Town Hall · 2 p.m. ET'}],
     stories:[
@@ -624,11 +625,11 @@ const CAMPUSES = {
     hero:IMG.oakConv, heroCred:'Photo by Ruby Wallau for Northeastern University',
     thumb:IMG.oakConv,
     speakers:[
-      {name:'Abhi Balakrishnan', cred:'DMSB’20'},
-      {name:'Diego Rivas', cred:'E’16'},
-      {name:'Madison Oppenheim', cred:'BHS’23, PharmD’24'},
-      {name:'Kushal Shankar', cred:'Khoury’25'},
-      {name:'Kelsey Lawler', cred:'DMSB’18'},
+      {name:'Abhi Balakrishnan', cred:'DMSB’20', img:'speakers/abhi-balakrishnan.jpg'},
+      {name:'Diego Rivas', cred:'E’16', img:'speakers/diego-rivas.jpg'},
+      {name:'Madison Oppenheim', cred:'BHS’23, PharmD’24', img:'speakers/madison-oppenheim.png'},
+      {name:'Kushal Shankar', cred:'Khoury’25', img:'speakers/kushal-shankar.jpg'},
+      {name:'Kelsey Lawler', cred:'DMSB’18', img:'speakers/kelsey-lawler.jpg'},
     ],
     sessions:[{label:'Oakland Convocation', sub:'Holmgren Meadow · 3 p.m. PT'}],
     stories:[
@@ -654,8 +655,8 @@ const CAMPUSES = {
     hero:IMG.lonWelc, heroCred:'Photo by Alyssa Stone/Northeastern University',
     thumb:IMG.lonWelc,
     speakers:[
-      {name:'Elena Megalou', cred:'AMD’15 · Young Global Leader'},
-      {name:'Stella Megalou', cred:'AMD’18 · Young Global Leader'},
+      {name:'Elena Megalou', cred:'AMD’15 · Young Global Leader', img:'speakers/elena-megalou.jpg'},
+      {name:'Stella Megalou', cred:'AMD’18 · Young Global Leader', img:'speakers/stella-megalou.jpg'},
     ],
     sessions:[{label:'London Convocation', sub:'indigo at The O2 · 11:30 a.m. BST'}],
     stories:[
@@ -825,31 +826,32 @@ function speakerMedia(sp, cls){
 function secSpeakers(c){
   const list = (c.speakers && c.speakers.length) ? c.speakers
     : [{name:'Speaker to be announced', cred:`Headshot and name will appear here once the ${c.city} speaker is confirmed.`}];
-  const many = list.length > 2;
   const eyebrow = `Convocation speaker${list.length>1?'s':''}`;
+  const redEyebrow = (cls='') => `<p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase ${cls}" style="margin:0 0 ${cls?'var(--proto-headgap)':'14px'};color:var(--ngn-v2-sys-color-primary,#c8102e)">${eyebrow}</p>`;
   let body;
-  if(many){
-    // headshot grid — rows center, so 5 sits as one row on desktop and wraps to centered rows below
-    body = `<p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase proto-sechead" style="margin:0 0 var(--proto-headgap);color:var(--ngn-v2-sys-color-primary,#c8102e)">${eyebrow}</p>
+  if(list.length === 1){
+    // solo speaker — centered headshot + name/credential, no empty column
+    const sp = list[0];
+    body = `<div class="proto-solo">
+      ${speakerMedia(sp,'proto-speaker__media proto-solo__media')}
+      <div class="proto-solo__text">
+        ${redEyebrow()}
+        <h2 class="wp-block-heading proto-kepler is-size-28" style="margin:0">${sp.name}</h2>
+        <p class="proto-solo__cred">${sp.cred||''}</p>
+      </div>
+    </div>`;
+  } else {
+    // headshot grid — rows center, so 5 sits as one row on desktop and wraps to centered rows below,
+    // and 2 sits side by side
+    body = `${redEyebrow('proto-sechead')}
       <div class="proto-speakers">${list.map(sp=>`
         <div class="proto-speaker">
           ${speakerMedia(sp,'proto-speaker__media')}
-          <p class="proto-speaker__name proto-kepler">${sp.name}</p>
+          <p class="proto-speaker__name">${sp.name}</p>
           <p class="proto-speaker__cred">${sp.cred||''}</p>
         </div>`).join('')}</div>`;
-  } else {
-    // feature layout — one big split per speaker, alternating sides
-    body = list.map((sp,i)=>`
-      <div class="proto-feature${i%2?' proto-feature--rev':''}${list.length>1?' proto-feature--stacked':''}">
-        <div>
-          ${i===0?`<p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase" style="margin:0 0 12px;color:var(--ngn-v2-sys-color-primary,#c8102e)">${eyebrow}</p>`:''}
-          <h2 class="wp-block-heading proto-kepler is-size-28" style="margin:0">${sp.name}</h2>
-          <p class="is-family-sans is-weight-bold is-size-15" style="margin:12px 0 0;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)">${sp.cred||''}</p>
-        </div>
-        ${speakerMedia(sp,'proto-feature__media')}
-      </div>`).join('');
   }
-  return `<div id="speakers" class="has-surface-container-low-color-scheme proto-band">
+  return `<div id="speakers" class="proto-band proto-band--dark">
     <div class="proto-wrap">${body}</div>
   </div>`;
 }
