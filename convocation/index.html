@@ -159,26 +159,31 @@
   .proto-band--dark{background:#000;color:#fff}
   .proto-band--dark .proto-kepler,.proto-band--dark .wp-block-heading{color:#fff}
 
-  /* solo speaker: centered headshot beside name/credential */
-  .proto-solo{display:flex;align-items:center;justify-content:center;gap:clamp(24px,4vw,44px);
-    max-width:640px;margin-inline:auto}
-  .proto-solo__media{flex:0 0 clamp(200px,30vw,280px)}
-  .proto-solo__cred{font-family:Lato,sans-serif;font-weight:700;font-size:15px;line-height:1.4;
-    margin:12px 0 0;color:rgba(255,255,255,.66)}
+  /* speaker roster: full-width rows — headshot · name · role · LinkedIn, bottom-aligned */
+  .proto-splist{border-top:1px solid rgba(255,255,255,.15)}
+  .proto-sprow{display:grid;grid-template-columns:auto 1fr auto 26px;align-items:end;
+    column-gap:clamp(14px,1.5vw,22px);padding:clamp(16px,1.9vw,22px) 2px;
+    border-bottom:1px solid rgba(255,255,255,.15)}
+  .proto-sprow__media{width:clamp(70px,7.2vw,91px);aspect-ratio:1/1;overflow:hidden;background:#222;
+    display:flex;align-items:center;justify-content:center}
+  .proto-sprow__media img{width:100%;height:100%;object-fit:cover;filter:grayscale(1)}
+  .proto-sprow__media svg{width:40%;height:40%;fill:#4a4a4a}
+  .proto-sprow__name{font-weight:400;font-size:clamp(24px,3vw,34px);line-height:.98;margin:0;color:#fff}
+  .proto-sprow__role{font-family:Lato,sans-serif;font-size:14px;line-height:1.35;margin:0;
+    max-width:240px;text-align:right;color:rgba(255,255,255,.6)}
+  .proto-sprow__li{display:inline-flex;justify-self:end;color:rgba(255,255,255,.55);transition:color .15s}
+  .proto-sprow__li svg{width:22px;height:22px;fill:currentColor}
+  .proto-sprow__li:hover,.proto-sprow__li:focus-visible{color:#fff}
   @media(width <= 599px){
-    .proto-solo{flex-direction:column;text-align:center;max-width:320px}
-    .proto-solo__media{width:min(100%,280px)}
+    .proto-sprow{grid-template-columns:auto 1fr 26px;column-gap:16px;align-items:stretch}
+    .proto-sprow__media{grid-row:1/3;align-self:center;width:clamp(74px,20vw,91px)}
+    .proto-sprow__name{grid-column:2;grid-row:1;align-self:start}
+    .proto-sprow__li{grid-column:3;grid-row:1;align-self:start}
+    .proto-sprow__role{grid-column:2/4;grid-row:2;align-self:end;text-align:left;max-width:none}
   }
 
-  /* speaker roster: square headshots, rows centered so 3+ wrap into balanced rows */
-  .proto-speakers{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(20px,2.4vw,32px)}
-  .proto-speaker{flex:0 1 190px;text-align:left}
-  .proto-speaker__media{aspect-ratio:1/1;background:#222;border-radius:0;
-    overflow:hidden;display:flex;align-items:center;justify-content:center;margin:0 0 14px}
-  .proto-speaker__media img{width:100%;height:100%;object-fit:cover}
-  .proto-speaker__media svg{width:34%;height:34%;fill:#4a4a4a}
-  .proto-speaker__name{font-family:Lato,sans-serif;font-weight:700;font-size:16px;line-height:1.25;margin:0;color:#fff}
-  .proto-speaker__cred{font-family:Lato,sans-serif;font-size:13px;line-height:1.4;margin:5px 0 0;color:rgba(255,255,255,.62)}
+  /* flat corners — remove all border radius on every component */
+  *,*::before,*::after{border-radius:0 !important}
 
   /* photo carousel — centered focus, infinite, autoplay; arrows below */
   .proto-slider-shell{margin-top:var(--proto-headgap)}
@@ -569,7 +574,7 @@ const CAMPUSES = {
     hero:IMG.crowd, heroCred:'Photo by Jodi King for Northeastern University',
     thumb:IMG.crowd,
     speakers:[
-      {name:'Samantha Johnson', cred:'E\u201921, MS\u201921 \u00b7 2022 Women Who Empower Innovator', img:'speakers/samantha-johnson.jpg'},
+      {name:'Samantha Johnson', cred:'E\u201921, MS\u201921 \u00b7 2022 Women Who Empower Innovator', img:'speakers/samantha-johnson.jpg', li:'https://www.linkedin.com/in/samantha-johnson-7001b413a/'},
     ],
     sessions:[{label:'Boston Convocation', sub:'MGM Music Hall at Fenway · 11 a.m. ET'}],
     stories:[
@@ -595,11 +600,11 @@ const CAMPUSES = {
     hero:IMG.movein2, heroCred:'Photo by Matthew Modoono/Northeastern University',
     thumb:IMG.movein2,
     speakers:[
-      {name:'Amelia Brooks', cred:'DMSB’26', img:'speakers/amelia-brooks.jpg'},
-      {name:'Steve Cody', cred:'LA’77', img:'speakers/steve-cody.jpg'},
-      {name:'Quinn Litherland', cred:'DMSB’22', img:'speakers/quinn-litherland.jpg'},
-      {name:'Margaret Montavon', cred:'MMC’12, MEd’19 · 2026 Women Who Empower Innovator Award Winner', img:'speakers/margaret-montavon.jpg'},
-      {name:'Elizabeth Raia', cred:'MMC’13 · 2026 Women Who Empower Innovator Award Winner', img:'speakers/elizabeth-raia.jpg'},
+      {name:'Amelia Brooks', cred:'DMSB’26', img:'speakers/amelia-brooks.jpg', li:'https://www.linkedin.com/in/amelia--brooks/'},
+      {name:'Steve Cody', cred:'LA’77', img:'speakers/steve-cody.jpg', li:'https://www.linkedin.com/in/stevencody/'},
+      {name:'Quinn Litherland', cred:'DMSB’22', img:'speakers/quinn-litherland.jpg', li:'https://www.linkedin.com/in/quinnlitherland/'},
+      {name:'Margaret Montavon', cred:'MMC’12, MEd’19 · 2026 Women Who Empower Innovator Award Winner', img:'speakers/margaret-montavon.jpg', li:'https://www.linkedin.com/in/margaretmontavon/'},
+      {name:'Elizabeth Raia', cred:'MMC’13 · 2026 Women Who Empower Innovator Award Winner', img:'speakers/elizabeth-raia.jpg', li:'https://www.linkedin.com/in/elizabethraia/'},
     ],
     sessions:[{label:'New York City Convocation', sub:'The Town Hall · 2 p.m. ET'}],
     stories:[
@@ -625,11 +630,11 @@ const CAMPUSES = {
     hero:IMG.oakConv, heroCred:'Photo by Ruby Wallau for Northeastern University',
     thumb:IMG.oakConv,
     speakers:[
-      {name:'Abhi Balakrishnan', cred:'DMSB’20', img:'speakers/abhi-balakrishnan.jpg'},
-      {name:'Diego Rivas', cred:'E’16', img:'speakers/diego-rivas.jpg'},
+      {name:'Abhi Balakrishnan', cred:'DMSB’20', img:'speakers/abhi-balakrishnan.jpg', li:'https://www.linkedin.com/in/abhishekbalak/'},
+      {name:'Diego Rivas', cred:'E’16', img:'speakers/diego-rivas.jpg', li:'https://www.linkedin.com/in/drivasco/'},
       {name:'Madison Oppenheim', cred:'BHS’23, PharmD’24', img:'speakers/madison-oppenheim.png'},
-      {name:'Kushal Shankar', cred:'Khoury’25', img:'speakers/kushal-shankar.jpg'},
-      {name:'Kelsey Lawler', cred:'DMSB’18', img:'speakers/kelsey-lawler.jpg'},
+      {name:'Kushal Shankar', cred:'Khoury’25', img:'speakers/kushal-shankar.jpg', li:'https://www.linkedin.com/in/kushal-shankar'},
+      {name:'Kelsey Lawler', cred:'DMSB’18', img:'speakers/kelsey-lawler.jpg', li:'https://www.linkedin.com/in/kelsey-lawler/'},
     ],
     sessions:[{label:'Oakland Convocation', sub:'Holmgren Meadow · 3 p.m. PT'}],
     stories:[
@@ -655,8 +660,8 @@ const CAMPUSES = {
     hero:IMG.lonWelc, heroCred:'Photo by Alyssa Stone/Northeastern University',
     thumb:IMG.lonWelc,
     speakers:[
-      {name:'Elena Megalou', cred:'AMD’15 · Young Global Leader', img:'speakers/elena-megalou.jpg'},
-      {name:'Stella Megalou', cred:'AMD’18 · Young Global Leader', img:'speakers/stella-megalou.jpg'},
+      {name:'Elena Megalou', cred:'AMD’15 · Young Global Leader', img:'speakers/elena-megalou.jpg', li:'https://www.linkedin.com/in/elenamegalou/'},
+      {name:'Stella Megalou', cred:'AMD’18 · Young Global Leader', img:'speakers/stella-megalou.jpg', li:'https://www.linkedin.com/in/stellamegalou/'},
     ],
     sessions:[{label:'London Convocation', sub:'indigo at The O2 · 11:30 a.m. BST'}],
     stories:[
@@ -689,6 +694,7 @@ function setLive(v){
 
 const svgPlay = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
 const svgPerson = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4 0-9 2-9 6v2h18v-2c0-4-5-6-9-6z"/></svg>';
+const svgLinkedIn = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.63-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>';
 
 /* ------------------------------------------------------------- helpers --- */
 function mapsLinks(c){
@@ -827,30 +833,14 @@ function secSpeakers(c){
   const list = (c.speakers && c.speakers.length) ? c.speakers
     : [{name:'Speaker to be announced', cred:`Headshot and name will appear here once the ${c.city} speaker is confirmed.`}];
   const eyebrow = `Convocation speaker${list.length>1?'s':''}`;
-  const redEyebrow = (cls='') => `<p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase ${cls}" style="margin:0 0 ${cls?'var(--proto-headgap)':'14px'};color:var(--ngn-v2-sys-color-primary,#c8102e)">${eyebrow}</p>`;
-  let body;
-  if(list.length === 1){
-    // solo speaker — centered headshot + name/credential, no empty column
-    const sp = list[0];
-    body = `<div class="proto-solo">
-      ${speakerMedia(sp,'proto-speaker__media proto-solo__media')}
-      <div class="proto-solo__text">
-        ${redEyebrow()}
-        <h2 class="wp-block-heading proto-kepler is-size-28" style="margin:0">${sp.name}</h2>
-        <p class="proto-solo__cred">${sp.cred||''}</p>
-      </div>
-    </div>`;
-  } else {
-    // headshot grid — rows center, so 5 sits as one row on desktop and wraps to centered rows below,
-    // and 2 sits side by side
-    body = `${redEyebrow('proto-sechead')}
-      <div class="proto-speakers">${list.map(sp=>`
-        <div class="proto-speaker">
-          ${speakerMedia(sp,'proto-speaker__media')}
-          <p class="proto-speaker__name">${sp.name}</p>
-          <p class="proto-speaker__cred">${sp.cred||''}</p>
-        </div>`).join('')}</div>`;
-  }
+  const body = `<p class="is-family-sans is-weight-bold is-size-13 has-letter-spacing-slight is-uppercase" style="margin:0 0 var(--proto-headgap);color:#fff">${eyebrow}</p>
+    <div class="proto-splist">${list.map(sp=>`
+      <div class="proto-sprow">
+        ${speakerMedia(sp,'proto-sprow__media')}
+        <h3 class="proto-sprow__name proto-kepler">${sp.name}</h3>
+        <p class="proto-sprow__role">${sp.cred||''}</p>
+        ${sp.li?`<a class="proto-sprow__li" href="${sp.li}" target="_blank" rel="noopener" aria-label="${sp.name} on LinkedIn">${svgLinkedIn}</a>`:''}
+      </div>`).join('')}</div>`;
   return `<div id="speakers" class="proto-band proto-band--dark">
     <div class="proto-wrap">${body}</div>
   </div>`;
