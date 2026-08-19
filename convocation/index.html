@@ -59,9 +59,9 @@
   /* pre-event livestream alert bar (ngn-banner styles ship only when a
      banner is active, so this mirrors that slot with scheme utilities) */
   .proto-alert{position:sticky;top:var(--proto-header-h,72px);z-index:90;
-    display:flex;align-items:center;justify-content:center;gap:12px 22px;flex-wrap:wrap;padding:9px 24px}
+    display:flex;align-items:center;justify-content:center;gap:12px 22px;flex-wrap:wrap;padding:9px 50px}
 
-  .proto-alert__close{position:absolute;right:clamp(12px,2vw,24px);top:50%;transform:translateY(-50%);
+  .proto-alert__close{position:absolute;right:16px;top:50%;transform:translateY(-50%);
     border:0;background:none;color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:4px 8px;opacity:.85}
   .proto-alert__close:hover{opacity:1}
   .proto-alert__close:focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -268,12 +268,13 @@
   .campus-switch-wrap::after{display:none}
   .campus-switch{background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" fill="none" stroke="%23191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg>') no-repeat right 1px center}
 
-  /* mobile nav: centered items, horizontal divider, centered alert */
+  /* mobile nav: centered items, horizontal divider, centered alert, smaller chevron */
   .proto-nav-divider{border-left:1px solid #E2E2E2;height:18px;align-self:center}
   .proto-alert{text-align:center}
+  .commencement-2026-header__chevron{width:7px;height:7px;border-bottom-width:1.5px;border-right-width:1.5px}
   @media(width <= 767px){
     .proto-nav-divider{border-left:0;border-top:1px solid #E2E2E2;height:0;width:100%;align-self:stretch;margin:8px 0}
-    .commencement-2026-header__trigger{justify-content:center;text-align:center;width:100%}
+    .commencement-2026-header__trigger{justify-content:center;text-align:center;width:100%;gap:9px}
     .proto-headwrap nav ul{justify-content:center;text-align:center}
     .campus-switch-wrap{justify-content:center}
   }
@@ -315,7 +316,7 @@
   /* campus panels */
   .proto-campuses{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
   @media(width <= 900px){.proto-campuses{grid-template-columns:repeat(2,1fr)}}
-  @media(width <= 520px){.proto-campuses{grid-template-columns:1fr}}
+  @media(width <= 520px){.proto-campus{aspect-ratio:4/5}}
   .proto-campus{position:relative;display:flex;align-items:flex-end;overflow:hidden;aspect-ratio:3/4;text-decoration:none;color:#fff;background:#111}
   .proto-campus img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
   .proto-campus::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 28%,rgba(0,0,0,.86) 100%);transition:background .3s}
@@ -348,7 +349,11 @@
 <header class="commencement-2026-header commencement-2026-header--landing" role="banner">
   <div class="proto-headwrap">
     <a href="#/" class="commencement-2026-header__brand proto-brand" aria-label="Northeastern Convocation 2026 home">
-      <svg class="proto-nlogo" viewBox="0 0 288 288" aria-hidden="true" focusable="false"><path d="M224.86,107.71c0-26.92,9.05-35.74,27.14-42.58v-4.41h-59.35v4.41c18.09,6.84,27.14,15.66,27.14,42.58v78.99l-125.54-120.02c-5.74-5.3-7.28-5.96-11.03-5.96h-47.22v4.41c10.37,1.1,16.55,3.97,31.55,18.53l5.74,5.52v90.02c0,26.92-9.05,35.74-27.14,42.58v4.41h59.35v-4.41c-18.09-6.84-27.14-15.66-27.14-42.58v-85.83l142.09,133.92h4.41v-119.58Z" fill="#c8102e"/></svg>
+      <svg class="proto-nlogo" viewBox="0 0 298 298" aria-hidden="true" focusable="false"><path d="M148.868 297.951C231.086 297.951 297.737 231.252 297.737 148.975C297.737 66.6986 231.086 0 148.868 0C66.6506 0 0 66.6986 0 148.975C0 231.252 66.6506 297.951 148.868 297.951Z" fill="black"></path>
+<path d="M66.4521 191.258C66.4521 169.292 83.0397 152.58 104.989 152.58C117.985 152.58 129.978 158.775 137.888 170.234L126.11 178.642C120.247 169.794 112.623 166.415 104.989 166.415C91.3283 166.415 81.7708 176.706 81.7708 191.258C81.7708 205.809 91.7274 216.101 105.378 216.101C117.872 216.101 124.892 208.738 126.611 200.771H103.884V187.878H141.705C141.93 189.814 141.981 192.026 141.981 193.91C141.981 213.223 128.382 229.925 105.378 229.925C82.3745 229.925 66.4521 213.213 66.4521 191.247V191.258Z" fill="white"></path>
+<path d="M156.194 228.829V155.191H169.466L210.163 205.727V155.191H224.796V228.829H211.309L170.838 178.836V228.829H156.205H156.194Z" fill="white"></path>
+<path d="M71.1904 144.255V70.6169H84.4625L125.159 121.153V70.6169H139.792V144.255H126.305L85.8337 94.2617V144.255H71.2007H71.1904Z" fill="white"></path>
+<path d="M151.201 70.6272V85.3425H199.327L156.42 128.27L166.817 138.674L210.081 95.3882V144.255H224.786V70.6272H151.201Z" fill="#C8102E"></path></svg>
       <span class="w">Convocation</span><span class="y">2026</span>
     </a>
     <button type="button" class="commencement-2026-header__trigger" aria-expanded="false" aria-controls="convocation-header-nav">
@@ -655,8 +660,8 @@ const CAMPUSES = {
     venue:'MGM Music Hall at Fenway', addr:'2 Lansdowne St., Boston, MA 02215',
     mapQ:'MGM Music Hall at Fenway, 2 Lansdowne St, Boston MA', coords:[42.34676,-71.09566],
     transit:'Green Line to Kenmore is a five-minute walk. Doors on Lansdowne Street, next to Fenway Park.',
-    hero:IMG.crowd, heroCred:'Photo by Jodi King for Northeastern University',
-    thumb:IMG.crowd,
+    hero:'photos/boston/neu_ms39q5283.jpg', heroCred:'Photo by Northeastern University',
+    thumb:'photos/boston/location.jpg',
     speakers:[
       {name:'Samantha Johnson', cred:'E\u201921, MS\u201921 \u00b7 2022 Women Who Empower Innovator', img:'speakers/samantha-johnson.jpg', li:'https://www.linkedin.com/in/samantha-johnson-7001b413a/'},
     ],
@@ -667,7 +672,7 @@ const CAMPUSES = {
       {t:'A Ruggles Station exhibit celebrates pioneering Black architects', img:'https://news.northeastern.edu/wp-content/uploads/2023/04/040623_AS_Ruggles_Exhibit_001.jpg', d:'April 6, 2023', href:'https://news.northeastern.edu/2023/04/06/ruggles-station-exhibit/'},
       {t:'The top five restaurants around the Boston campus', img:'https://news.northeastern.edu/wp-content/uploads/2022/09/food1400.jpg', d:'Oct. 12, 2022', href:'https://news.northeastern.edu/2022/10/12/best-restaurants-near-boston-campus/'},
     ],
-    photos:[IMG.confetti, IMG.movein1, IMG.husky101, IMG.movein3, IMG.pawsRPS, IMG.movein2],
+    photos:['photos/boston/neu_ms39q4979.jpg','photos/boston/neu_ms39q6360.jpg','photos/boston/neu_ms35ww33m.jpg','photos/boston/neu_ms39qc557.jpg','photos/boston/neu_ms39q640k.jpg','photos/boston/neu_ms39qf49h.jpg','photos/boston/neu_ms39qd07s.jpg','photos/boston/neu_ms39qf67f.jpg'],
     embeds:[
       {src:'https://www.instagram.com/p/DXo24jxjeWn/embed', h:575},
       {src:'https://www.tiktok.com/player/v1/7633847627854941471?&music_info=1&description=1', h:575},
@@ -711,8 +716,8 @@ const CAMPUSES = {
     venue:'Holmgren Meadow', addr:'Northeastern Oakland campus, 5000 MacArthur Blvd., Oakland, CA 94613',
     mapQ:'Northeastern University Oakland, 5000 MacArthur Blvd, Oakland CA', coords:[37.78053,-122.18280],
     transit:'Outdoors on the Oakland campus, following the Taste of Oakland on the Oval. A short walk from visitor parking.',
-    hero:IMG.oakConv, heroCred:'Photo by Ruby Wallau for Northeastern University',
-    thumb:IMG.oakConv,
+    hero:'photos/oakland/neu_ms39td94n.jpg', heroCred:'Photo by Northeastern University',
+    thumb:'photos/oakland/location.jpg',
     speakers:[
       {name:'Abhi Balakrishnan', cred:'DMSB’20', img:'speakers/abhi-balakrishnan.jpg', li:'https://www.linkedin.com/in/abhishekbalak/'},
       {name:'Diego Rivas', cred:'E’16', img:'speakers/diego-rivas.jpg', li:'https://www.linkedin.com/in/drivasco/'},
@@ -727,7 +732,7 @@ const CAMPUSES = {
       {t:'An all-night hackathon keeps Oakland students coding', img:'https://news.northeastern.edu/wp-content/uploads/2023/11/231116_Hackathon_5260.jpg', d:'Nov. 21, 2023', href:'https://news.northeastern.edu/2023/11/21/experiential-entrepreneurship-summit-oakland-hackathon/'},
       {t:'East Oakland students explore sustainable urban design on campus', img:'https://news.northeastern.edu/wp-content/uploads/2023/12/113023_GR_OaklandHS_Visit_016.jpg', d:'Dec. 4, 2023', href:'https://news.northeastern.edu/2023/12/04/sustainable-urban-farming-design-oakland/'},
     ],
-    photos:[IMG.oakConv, IMG.oakTaste, IMG.oakLight, IMG.oakConv2, IMG.flags, IMG.movein2],
+    photos:['photos/oakland/neu_ms400b52f.jpg','photos/oakland/neu_ms39td75f.jpg','photos/oakland/neu_ms39td681.jpg','photos/oakland/neu_ms39tb395.jpg','photos/oakland/neu_ms39td98r.jpg','photos/oakland/neu_ms39td57h.jpg','photos/oakland/neu_ms39tf00k.jpg','photos/oakland/neu_ms39td702.jpg'],
     embeds:[
       {src:'https://www.instagram.com/p/DXZfwoRFiGm/embed', h:575},
       {src:'https://www.tiktok.com/player/v1/7633914284698848542?&music_info=1&description=1', h:575},
@@ -741,8 +746,8 @@ const CAMPUSES = {
     venue:'indigo at The O2', addr:'The O2, Peninsula Square, London SE10 0DX',
     mapQ:'indigo at The O2, Peninsula Square, London', coords:[51.50257,0.00251],
     transit:'North Greenwich station (Jubilee line) is a five-minute walk. indigo is inside The O2 main entrance, on the left.',
-    hero:IMG.lonWelc, heroCred:'Photo by Alyssa Stone/Northeastern University',
-    thumb:IMG.lonWelc,
+    hero:'photos/london/neu_ms39qx12r.jpg', heroCred:'Photo by Northeastern University',
+    thumb:'photos/london/location.jpg',
     speakers:[
       {name:'Elena Megalou', cred:'AMD’15 · Young Global Leader', img:'speakers/elena-megalou.jpg', li:'https://www.linkedin.com/in/elenamegalou/'},
       {name:'Stella Megalou', cred:'AMD’18 · Young Global Leader', img:'speakers/stella-megalou.jpg', li:'https://www.linkedin.com/in/stellamegalou/'},
@@ -754,7 +759,7 @@ const CAMPUSES = {
       {t:'Pitch events and Women Who Empower headline Global Entrepreneurship Week', img:'https://news.northeastern.edu/wp-content/uploads/2023/11/1400.jpg', d:'Nov. 10, 2023', href:'https://news.northeastern.edu/2023/11/10/stuart-weitzman-global-entrepreneur-week/'},
       {t:'London students prepare for the global debate stage', img:'https://news.northeastern.edu/wp-content/uploads/2023/11/Debate1400.jpg', d:'Nov. 28, 2023', href:'https://news.northeastern.edu/2023/11/28/american-vs-british-parliamentary-debate/'},
     ],
-    photos:[IMG.lonWelc, IMG.lonBooks, IMG.lonHusky, IMG.lonThx, IMG.flags, IMG.crowd],
+    photos:['photos/london/neu_ms39qx30p.jpg','photos/london/neu_ms39qw00r.jpg','photos/london/neu_ms39qx395.jpg','photos/london/neu_ms39qw941.jpg','photos/london/neu_ms39qx46k.jpg','photos/london/neu_ms39qw186.jpg','photos/london/neu_ms39qx12r.jpg'],
     embeds:[
       {src:'https://www.instagram.com/reel/DWCWcQfDw4u/embed', h:575},
       {src:'https://www.tiktok.com/player/v1/7618673096333036831?&music_info=1&description=1', h:575},
@@ -1070,9 +1075,9 @@ function campusView(key){
 /* -------------------------------------------------------------- splash --- */
 function splashView(){
   const gallery = [
-    {img:IMG.crowd, cls:'big'}, {img:IMG.oakConv, cls:''}, {img:IMG.lonWelc, cls:''},
-    {img:IMG.confetti, cls:''}, {img:IMG.movein2, cls:''}, {img:IMG.husky101, cls:''},
-    {img:IMG.oakTaste, cls:''}, {img:IMG.flags, cls:''}, {img:IMG.lonBooks, cls:''},
+    {img:'photos/boston/neu_ms39q4979.jpg', cls:'big'}, {img:'photos/oakland/neu_ms39td75f.jpg', cls:''}, {img:'photos/london/neu_ms39qx30p.jpg', cls:''},
+    {img:'photos/boston/neu_ms39q6360.jpg', cls:''}, {img:'photos/oakland/neu_ms400b52f.jpg', cls:''}, {img:'photos/london/neu_ms39qw00r.jpg', cls:''},
+    {img:'photos/boston/neu_ms39qc557.jpg', cls:''}, {img:'photos/oakland/neu_ms39td681.jpg', cls:''}, {img:'photos/london/neu_ms39qx46k.jpg', cls:''},
   ];
   return `<div class="wp-block-cover alignfull proto-hero proto-hero--home">
     <span aria-hidden="true" class="wp-block-cover__background" style="background:rgba(0,0,0,.45);opacity:1"></span>
@@ -1174,6 +1179,8 @@ function render(){
       + `<li class="commencement-2026-header__nav-item proto-nav-divider" aria-hidden="true"></li>`
       + switcher;
   }
+  const trigLabel = document.querySelector('.commencement-2026-header__current-label');
+  if (trigLabel) trigLabel.textContent = route==='splash' ? 'Choose your campus' : 'Menu';
   closeMobileNav();
   fitCampusSwitch();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCampusSwitch);
