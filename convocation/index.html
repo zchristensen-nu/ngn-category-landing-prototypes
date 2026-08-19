@@ -261,9 +261,8 @@
   /* ---------- FY26 landing refresh + fixes ---------- */
   /* red Northeastern N in the brand */
   .proto-brand{align-items:center}
-  .proto-nlogo{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
-    background:var(--ngn-v2-sys-color-primary,#c8102e);color:#fff;margin-right:10px;
-    font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:700;font-size:20px;line-height:1}
+  .proto-nlogo{display:inline-block;width:auto;height:32px;margin-right:11px;vertical-align:middle;
+    fill:var(--ngn-v2-sys-color-primary,#c8102e)}
 
   /* campus switch: chevron lives inside the clickable select */
   .campus-switch-wrap::after{display:none}
@@ -327,6 +326,18 @@
   .proto-campus__date{display:block;margin:7px 0 0;font-family:Lato,sans-serif;font-size:13px;color:rgba(255,255,255,.9);opacity:0;transform:translateY(6px);transition:.3s}
   .proto-campus:hover .proto-campus__date,.proto-campus:focus-visible .proto-campus__date{opacity:1;transform:none}
 
+  /* hero background video */
+  .proto-hero__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+  /* overview heading (2-col: heading | paragraph) */
+  @media(width >= 782px){.proto-overview{grid-template-columns:0.8fr 1.15fr}}
+  .proto-overview__heading{margin:0;font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:500;font-size:clamp(26px,3vw,40px);line-height:1.12}
+
+  /* thin content-width divider between landing sections */
+  .proto-topline{position:relative}
+  .proto-topline::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:min(100% - 40px, var(--proto-w,1080px));height:1px;background:var(--ngn-v2-sys-color-outline-variant,#e5e5e5)}
+
   /* flat corners everywhere except global buttons/round controls */
   *,*::before,*::after{border-radius:0 !important}
   .ngn-button,.is-shape-round,.proto-slider-arrow,.proto-play,.wp-element-button,.button{border-radius:999px !important}
@@ -337,7 +348,7 @@
 <header class="commencement-2026-header commencement-2026-header--landing" role="banner">
   <div class="proto-headwrap">
     <a href="#/" class="commencement-2026-header__brand proto-brand" aria-label="Northeastern Convocation 2026 home">
-      <span class="proto-nlogo" aria-hidden="true">N</span>
+      <svg class="proto-nlogo" viewBox="0 0 288 288" aria-hidden="true" focusable="false"><path d="M224.86,107.71c0-26.92,9.05-35.74,27.14-42.58v-4.41h-59.35v4.41c18.09,6.84,27.14,15.66,27.14,42.58v78.99l-125.54-120.02c-5.74-5.3-7.28-5.96-11.03-5.96h-47.22v4.41c10.37,1.1,16.55,3.97,31.55,18.53l5.74,5.52v90.02c0,26.92-9.05,35.74-27.14,42.58v4.41h59.35v-4.41c-18.09-6.84-27.14-15.66-27.14-42.58v-85.83l142.09,133.92h4.41v-119.58Z" fill="#c8102e"/></svg>
       <span class="w">Convocation</span><span class="y">2026</span>
     </a>
     <button type="button" class="commencement-2026-header__trigger" aria-expanded="false" aria-controls="convocation-header-nav">
@@ -1065,11 +1076,12 @@ function splashView(){
   ];
   return `<div class="wp-block-cover alignfull proto-hero proto-hero--home">
     <span aria-hidden="true" class="wp-block-cover__background" style="background:rgba(0,0,0,.45);opacity:1"></span>
-    <img class="wp-block-cover__image-background" src="${IMG.crowd}" alt="" data-object-fit="cover" fetchpriority="high">
+    <video class="wp-block-cover__image-background proto-hero__video" autoplay muted loop playsinline poster="${IMG.crowd}">
+      <source src="hero.mp4" type="video/mp4">
+    </video>
     <div class="wp-block-cover__inner-container">
-      <p class="proto-hero__eyebrow">Northeastern University</p>
       <h1 class="proto-kepler" style="color:#fff">Northeastern Convocation 2026</h1>
-      <p class="proto-hero__sub">One incoming class, welcomed across four campuses. Join the ceremony, meet the speakers and celebrate the start of the journey — in Boston, New York City, Oakland and London.</p>
+      <p class="proto-hero__sub">One incoming class, welcomed across four campuses. Join the ceremony, meet the speakers and celebrate the start of the journey in Boston, New York City, Oakland and London.</p>
       <div class="proto-ctas">
         <a class="ngn-button proto-btn-white is-size-sm is-shape-round" href="#overview" data-anchor="overview"><span class="ngn-button__label">Learn more</span></a>
         <a class="ngn-button is-mode-outlined-inverse is-size-sm is-shape-round" href="#campuses" data-anchor="campuses"><span class="ngn-button__label">Choose your campus</span></a>
@@ -1079,32 +1091,22 @@ function splashView(){
 
   <div id="overview" class="proto-band">
     <div class="proto-wrap">
-      ${sectionHead('Overview')}
-      <div class="proto-overview" style="margin-top:var(--proto-headgap)">
-        <div>
-          <p class="proto-overview__lead">Convocation is the official welcome for Northeastern’s newest students — a moment of ceremony, community and celebration before classes begin.</p>
-          <p class="proto-overview__body">Over three days in September, each campus hosts its own convocation with student speakers, alumni voices and university leaders. Wherever you’re starting — Boston, New York City, Oakland or London — the day is a shared beginning to the Northeastern experience, livestreamed here so families around the world can watch.</p>
-        </div>
-        <div class="proto-stats">
-          <div class="proto-stat"><div class="proto-stat__n">4</div><div class="proto-stat__l">Campuses hosting convocation</div></div>
-          <div class="proto-stat"><div class="proto-stat__n">3</div><div class="proto-stat__l">Days of ceremonies, Sept. 8–10</div></div>
-          <div class="proto-stat"><div class="proto-stat__n">2030</div><div class="proto-stat__l">The incoming class</div></div>
-          <div class="proto-stat"><div class="proto-stat__n">1</div><div class="proto-stat__l">Global university, one welcome</div></div>
-        </div>
+      <div class="proto-overview">
+        <h2 class="proto-overview__heading">Welcome, Class of 2030</h2>
+        <p class="proto-overview__body">Convocation is the official welcome for Northeastern’s newest students: a moment of ceremony, community and celebration before classes begin. Over three days in September, each campus hosts its own convocation with student speakers, alumni voices and university leaders. Wherever you’re starting, in Boston, New York City, Oakland or London, the day is a shared beginning to the Northeastern experience, livestreamed here so families around the world can watch.</p>
       </div>
     </div>
   </div>
 
-  <div id="gallery" class="proto-band has-surface-container-low-color-scheme">
+  <div id="gallery" class="proto-band proto-topline">
     <div class="proto-wrap">
-      ${sectionHead('Gallery')}
-      <div class="proto-gallery" style="margin-top:var(--proto-headgap)">
+      <div class="proto-gallery">
         ${gallery.map(g=>`<a href="#campuses" class="${g.cls}"><img src="${g.img}" alt="" loading="lazy"></a>`).join('')}
       </div>
     </div>
   </div>
 
-  <div id="campuses" class="proto-band">
+  <div id="campuses" class="proto-band proto-topline">
     <div class="proto-wrap">
       ${sectionHead('Choose your campus')}
       <div class="proto-campuses" style="margin-top:var(--proto-headgap)">
@@ -1113,7 +1115,6 @@ function splashView(){
             <img src="${c.thumb}" alt="" loading="lazy">
             <span class="proto-campus__body">
               <h3 class="proto-campus__city">${c.city}</h3>
-              <span class="proto-campus__date">${c.date} · ${c.time}</span>
             </span>
           </a>`;}).join('')}
       </div>
