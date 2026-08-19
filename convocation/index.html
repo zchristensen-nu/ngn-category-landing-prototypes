@@ -266,7 +266,7 @@
 
   /* campus switch: chevron lives inside the clickable select */
   .campus-switch-wrap::after{display:none}
-  .campus-switch{padding-right:18px;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" fill="none" stroke="%23191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg>') no-repeat right center}
+  .campus-switch{background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" fill="none" stroke="%23191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg>') no-repeat right 1px center}
 
   /* mobile nav: centered items, horizontal divider, centered alert */
   .proto-nav-divider{border-left:1px solid #E2E2E2;height:18px;align-self:center}
@@ -299,13 +299,13 @@
   .proto-overview{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(32px,5vw,72px);align-items:start}
   @media(width <= 781px){.proto-overview{grid-template-columns:1fr;gap:28px}}
   .proto-overview__lead{font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:500;font-size:clamp(22px,2.2vw,28px);line-height:1.3;margin:0}
-  .proto-overview__body{margin:16px 0 0;font-size:16px;line-height:1.6;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
+  .proto-overview__body{margin:0;font-size:16px;line-height:1.6;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
   .proto-stats{display:grid;grid-template-columns:1fr 1fr;gap:26px 24px}
   .proto-stat__n{font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:500;font-size:clamp(32px,3.6vw,46px);line-height:1;color:var(--ngn-v2-sys-color-primary,#c8102e)}
   .proto-stat__l{margin:8px 0 0;font-size:13.5px;line-height:1.4;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
 
   /* gallery mosaic */
-  .proto-gallery{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:180px;gap:12px;grid-auto-flow:dense}
+  .proto-gallery{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:220px;gap:12px;grid-auto-flow:dense}
   .proto-gallery a{display:block;overflow:hidden;position:relative;background:#111}
   .proto-gallery img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
   .proto-gallery a:hover img{transform:scale(1.05)}
@@ -1080,7 +1080,7 @@ function splashView(){
       <source src="hero.mp4" type="video/mp4">
     </video>
     <div class="wp-block-cover__inner-container">
-      <h1 class="proto-kepler" style="color:#fff">Northeastern Convocation 2026</h1>
+      <h1 class="proto-kepler" style="color:#fff">Welcome, Class of 2030</h1>
       <p class="proto-hero__sub">One incoming class, welcomed across four campuses. Join the ceremony, meet the speakers and celebrate the start of the journey in Boston, New York City, Oakland and London.</p>
       <div class="proto-ctas">
         <a class="ngn-button proto-btn-white is-size-sm is-shape-round" href="#overview" data-anchor="overview"><span class="ngn-button__label">Learn more</span></a>
@@ -1092,7 +1092,7 @@ function splashView(){
   <div id="overview" class="proto-band">
     <div class="proto-wrap">
       <div class="proto-overview">
-        <h2 class="proto-overview__heading">Welcome, Class of 2030</h2>
+        <h2 class="proto-overview__heading">What is Convocation?</h2>
         <p class="proto-overview__body">Convocation is the official welcome for Northeastern’s newest students: a moment of ceremony, community and celebration before classes begin. Over three days in September, each campus hosts its own convocation with student speakers, alumni voices and university leaders. Wherever you’re starting, in Boston, New York City, Oakland or London, the day is a shared beginning to the Northeastern experience, livestreamed here so families around the world can watch.</p>
       </div>
     </div>
@@ -1206,7 +1206,7 @@ function fitCampusSwitch(){
   probe.style.fontWeight = cs.fontWeight;
   probe.style.letterSpacing = cs.letterSpacing;
   document.body.appendChild(probe);
-  sel.style.width = (Math.ceil(probe.offsetWidth) + 26) + 'px'; // text + chevron room
+  sel.style.width = (Math.ceil(probe.offsetWidth) + 16) + 'px'; // text + chevron room
   probe.remove();
 }
 
