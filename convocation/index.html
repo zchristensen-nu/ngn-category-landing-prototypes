@@ -25,7 +25,7 @@
   /* header brand (no convocation logo asset exists yet; matches the
      commencement wordmark treatment: serif caps + accent italic year) */
   .commencement-2026-header{padding-inline:0}
-  .proto-headwrap{display:flex;align-items:center;gap:40px;justify-content:space-between;width:100%;
+  .proto-headwrap{display:flex;align-items:center;gap:40px;justify-content:space-between;width:100%;box-sizing:border-box;
     max-width:var(--proto-w,1080px);margin-inline:auto;padding-inline:clamp(20px,3vw,32px)}
   .proto-headwrap nav ul{flex-wrap:wrap;align-items:center}
   .campus-switch-wrap{display:inline-flex;align-items:center}
@@ -256,14 +256,88 @@
   /* aspect boxes crop their media (scoped to .livestream-list upstream) */
   .is-aspect-16-9,.is-aspect-3-2{position:relative;overflow:hidden}
   .is-aspect-16-9 > img,.is-aspect-3-2 > img{width:100%;height:100%;object-fit:cover}
-  #go,#speakers,#stories,#photos,#social,#others{scroll-margin-top:150px}
+  #go,#speakers,#stories,#photos,#social,#others,#overview,#gallery,#campuses{scroll-margin-top:150px}
+
+  /* ---------- FY26 landing refresh + fixes ---------- */
+  /* red Northeastern N in the brand */
+  .proto-brand{align-items:center}
+  .proto-nlogo{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+    background:var(--ngn-v2-sys-color-primary,#c8102e);color:#fff;margin-right:10px;
+    font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:700;font-size:20px;line-height:1}
+
+  /* campus switch: chevron lives inside the clickable select */
+  .campus-switch-wrap::after{display:none}
+  .campus-switch{padding-right:18px;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" fill="none" stroke="%23191919" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg>') no-repeat right center}
+
+  /* mobile nav: centered items, horizontal divider, centered alert */
+  .proto-nav-divider{border-left:1px solid #E2E2E2;height:18px;align-self:center}
+  .proto-alert{text-align:center}
+  @media(width <= 767px){
+    .proto-nav-divider{border-left:0;border-top:1px solid #E2E2E2;height:0;width:100%;align-self:stretch;margin:8px 0}
+    .commencement-2026-header__trigger{justify-content:center;text-align:center;width:100%}
+    .proto-headwrap nav ul{justify-content:center;text-align:center}
+    .campus-switch-wrap{justify-content:center}
+  }
+
+  /* getting-there: heading/info above the map on mobile */
+  .proto-go{display:flex;gap:clamp(32px,5vw,64px);flex-wrap:wrap;align-items:center}
+  .proto-go__map{flex:1 1 400px}
+  .proto-go__info{flex:1 1 300px}
+  @media(width <= 767px){
+    .proto-go__map{order:2;flex-basis:100%}
+    .proto-go__info{order:1;flex-basis:100%}
+  }
+
+  /* home hero: large + centered */
+  .proto-hero--home{min-height:min(86vh,700px)}
+  .proto-hero--home .wp-block-cover__inner-container{text-align:center;max-width:840px}
+  .proto-hero--home h1{font-size:clamp(40px,6vw,72px);line-height:1.02}
+  .proto-hero__eyebrow{margin:0 0 16px;font-family:Lato,sans-serif;font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#fff;opacity:.85}
+  .proto-hero__sub{margin:20px auto 0;max-width:58ch;font-size:clamp(17px,1.5vw,20px);line-height:1.5;color:#fff}
+  .proto-hero--home .proto-ctas{justify-content:center;margin-top:30px}
+
+  /* overview */
+  .proto-overview{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(32px,5vw,72px);align-items:start}
+  @media(width <= 781px){.proto-overview{grid-template-columns:1fr;gap:28px}}
+  .proto-overview__lead{font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:500;font-size:clamp(22px,2.2vw,28px);line-height:1.3;margin:0}
+  .proto-overview__body{margin:16px 0 0;font-size:16px;line-height:1.6;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
+  .proto-stats{display:grid;grid-template-columns:1fr 1fr;gap:26px 24px}
+  .proto-stat__n{font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:500;font-size:clamp(32px,3.6vw,46px);line-height:1;color:var(--ngn-v2-sys-color-primary,#c8102e)}
+  .proto-stat__l{margin:8px 0 0;font-size:13.5px;line-height:1.4;color:var(--ngn-v2-sys-color-on-surface-variant,#49454e)}
+
+  /* gallery mosaic */
+  .proto-gallery{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:180px;gap:12px;grid-auto-flow:dense}
+  .proto-gallery a{display:block;overflow:hidden;position:relative;background:#111}
+  .proto-gallery img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+  .proto-gallery a:hover img{transform:scale(1.05)}
+  .proto-gallery .big{grid-column:span 2;grid-row:span 2}
+  @media(width <= 781px){.proto-gallery{grid-template-columns:repeat(2,1fr);grid-auto-rows:140px}}
+
+  /* campus panels */
+  .proto-campuses{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(width <= 900px){.proto-campuses{grid-template-columns:repeat(2,1fr)}}
+  @media(width <= 520px){.proto-campuses{grid-template-columns:1fr}}
+  .proto-campus{position:relative;display:flex;align-items:flex-end;overflow:hidden;aspect-ratio:3/4;text-decoration:none;color:#fff;background:#111}
+  .proto-campus img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+  .proto-campus::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 28%,rgba(0,0,0,.86) 100%);transition:background .3s}
+  .proto-campus:hover img{transform:scale(1.05)}
+  .proto-campus:hover::after{background:linear-gradient(180deg,rgba(0,0,0,.15) 18%,rgba(0,0,0,.82) 100%)}
+  .proto-campus__body{position:relative;z-index:2;padding:22px 22px 24px;width:100%}
+  .proto-campus__city{margin:0;color:#fff;font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:500;font-size:clamp(24px,2vw,30px);line-height:1.05;text-shadow:0 1px 14px rgba(0,0,0,.6)}
+  .proto-campus__date{display:block;margin:7px 0 0;font-family:Lato,sans-serif;font-size:13px;color:rgba(255,255,255,.9);opacity:0;transform:translateY(6px);transition:.3s}
+  .proto-campus:hover .proto-campus__date,.proto-campus:focus-visible .proto-campus__date{opacity:1;transform:none}
+
+  /* flat corners everywhere except global buttons/round controls */
+  *,*::before,*::after{border-radius:0 !important}
+  .ngn-button,.is-shape-round,.proto-slider-arrow,.proto-play,.wp-element-button,.button{border-radius:999px !important}
 </style>
 </head>
 <body class="wp-embed-responsive">
 
 <header class="commencement-2026-header commencement-2026-header--landing" role="banner">
   <div class="proto-headwrap">
-    <a href="#/" class="commencement-2026-header__brand proto-brand" aria-label="Convocation 2026 home">
+    <a href="#/" class="commencement-2026-header__brand proto-brand" aria-label="Northeastern Convocation 2026 home">
+      <span class="proto-nlogo" aria-hidden="true">N</span>
       <span class="w">Convocation</span><span class="y">2026</span>
     </a>
     <button type="button" class="commencement-2026-header__trigger" aria-expanded="false" aria-controls="convocation-header-nav">
@@ -578,9 +652,9 @@ const CAMPUSES = {
     sessions:[{label:'Boston Convocation', sub:'MGM Music Hall at Fenway · 11 a.m. ET'}],
     stories:[
       {t:'President Aoun welcomes the Class of 2029', img:'https://news.northeastern.edu/wp-content/uploads/2025/09/090225_AS_Convocation_1400.jpg', d:'Sept. 2, 2025', href:'https://news.northeastern.edu/2025/09/02/president-aoun-ai-humanity-class-2029/', dek:'At Boston convocation, President Aoun urged first-year students to balance AI and human capabilities to shape the future.'},
-      {t:'Moving day', img:IMG.movein1, d:'Aug. 27, 2025', href:'https://news.northeastern.edu/2025/08/27/moving-day-3/', dek:'Family members help incoming students move in on Northeastern’s Boston campus.'},
-      {t:'Move-in momentum', img:IMG.movein2, d:'Aug. 31, 2025', href:'https://news.northeastern.edu/2025/08/31/move-in-momentum/', dek:'A student crosses Gainsborough Street while moving in on Northeastern’s Boston campus.'},
-      {t:'Rolling into a new chapter', img:IMG.movein3, d:'Aug. 26, 2025', href:'https://news.northeastern.edu/2025/08/26/rolling-into-a-new-chapter/', dek:'A Northeastern student moves into a residence hall on the Boston campus.'},
+      {t:'Everything you need to know about Welcome Week', img:'https://news.northeastern.edu/wp-content/uploads/2023/08/Fall_Fest_1400.jpg', d:'Aug. 28, 2023', href:'https://news.northeastern.edu/2023/08/28/welcome-week-fall-2023/'},
+      {t:'A Ruggles Station exhibit celebrates pioneering Black architects', img:'https://news.northeastern.edu/wp-content/uploads/2023/04/040623_AS_Ruggles_Exhibit_001.jpg', d:'April 6, 2023', href:'https://news.northeastern.edu/2023/04/06/ruggles-station-exhibit/'},
+      {t:'The top five restaurants around the Boston campus', img:'https://news.northeastern.edu/wp-content/uploads/2022/09/food1400.jpg', d:'Oct. 12, 2022', href:'https://news.northeastern.edu/2022/10/12/best-restaurants-near-boston-campus/'},
     ],
     photos:[IMG.confetti, IMG.movein1, IMG.husky101, IMG.movein3, IMG.pawsRPS, IMG.movein2],
     embeds:[
@@ -637,10 +711,10 @@ const CAMPUSES = {
     ],
     sessions:[{label:'Oakland Convocation', sub:'Holmgren Meadow · 3 p.m. PT'}],
     stories:[
-      {t:'Taste of Oakland', img:IMG.oakTaste, d:'Sept. 3, 2025', href:'https://news.northeastern.edu/2025/09/03/taste-of-oakland/', dek:'Students wear screen-printed shirts by Olive Street Agency during Fall Orientation Week on the Oakland campus.'},
-      {t:'Bright beginnings', img:IMG.oakConv, d:'Sept. 4, 2024', href:'https://news.northeastern.edu/2024/09/04/bright-beginnings/', dek:'First-year students attend convocation on Northeastern’s Oakland campus.'},
-      {t:'Oakland convocation kicks off the academic year', img:IMG.oakConv2, d:'Sept. 11, 2024', href:'https://news.northeastern.edu/2024/09/11/oakland-convocation-2024/', dek:'Words of wisdom, musical acts and lots of dancing kicked off the academic year on the Oakland campus.'},
-      {t:'In the dark, finding light', img:IMG.oakLight, d:'Sept. 24, 2025', href:'https://news.northeastern.edu/2025/09/24/in-the-dark-finding-light/', dek:'Suraya Royall works in the darkroom in the Print Media Labs on Northeastern’s Oakland campus.'},
+      {t:'Oakland convocation kicks off the academic year', img:'https://news.northeastern.edu/wp-content/uploads/2024/09/Oakland-Convocation-1400x932-1.png', d:'Sept. 11, 2024', href:'https://news.northeastern.edu/2024/09/11/oakland-convocation-2024/', dek:'Words of wisdom, musical acts and lots of dancing kicked off the academic year on the Oakland campus.'},
+      {t:'Founders shaping the next generation of Oakland entrepreneurs', img:'https://news.northeastern.edu/wp-content/uploads/2023/11/Oakland1400.jpg', d:'Nov. 30, 2023', href:'https://news.northeastern.edu/2023/11/30/entrepreneurship-courses-at-oakland/'},
+      {t:'An all-night hackathon keeps Oakland students coding', img:'https://news.northeastern.edu/wp-content/uploads/2023/11/231116_Hackathon_5260.jpg', d:'Nov. 21, 2023', href:'https://news.northeastern.edu/2023/11/21/experiential-entrepreneurship-summit-oakland-hackathon/'},
+      {t:'East Oakland students explore sustainable urban design on campus', img:'https://news.northeastern.edu/wp-content/uploads/2023/12/113023_GR_OaklandHS_Visit_016.jpg', d:'Dec. 4, 2023', href:'https://news.northeastern.edu/2023/12/04/sustainable-urban-farming-design-oakland/'},
     ],
     photos:[IMG.oakConv, IMG.oakTaste, IMG.oakLight, IMG.oakConv2, IMG.flags, IMG.movein2],
     embeds:[
@@ -665,9 +739,9 @@ const CAMPUSES = {
     sessions:[{label:'London Convocation', sub:'indigo at The O2 · 11:30 a.m. BST'}],
     stories:[
       {t:'London’s first-years urged to step outside their comfort zone', img:'https://news.northeastern.edu/wp-content/uploads/2025/09/090425_CV_London_Convocation_085.png', d:'Sept. 4, 2025', href:'https://news.northeastern.edu/2025/09/04/london-convocation-northeastern-welcome/', dek:'Dean Scott Wildman welcomed hundreds of first-year students to the London campus and the university’s global network.'},
-      {t:'Hit the books', img:IMG.lonBooks, d:'March 3, 2026', href:'https://news.northeastern.edu/2026/03/03/hit-the-books-2/', dek:'Students study in Devon House on Northeastern’s London campus.'},
-      {t:'Fur-ever memories', img:IMG.lonHusky, d:'March 25, 2025', href:'https://news.northeastern.edu/2025/03/25/fur-ever-memories/', dek:'Northeastern students on the London campus stuff plush husky stuffed animals.'},
-      {t:'Thanksgiving on the London campus', img:IMG.lonThx, d:'Nov. 23, 2023', href:'https://news.northeastern.edu/2023/11/23/northeastern-thanksgiving/', dek:'A traditional Thanksgiving menu, complete with turkey, corn bread and marshmallow-topped sweet potatoes.'},
+      {t:'London campus welcomes 1,050 new undergraduate students', img:'https://news.northeastern.edu/wp-content/uploads/2023/09/090123_CV_London_Move_In_031.jpg', d:'Sept. 4, 2023', href:'https://news.northeastern.edu/2023/09/04/northeasterns-london-campus/'},
+      {t:'Pitch events and Women Who Empower headline Global Entrepreneurship Week', img:'https://news.northeastern.edu/wp-content/uploads/2023/11/1400.jpg', d:'Nov. 10, 2023', href:'https://news.northeastern.edu/2023/11/10/stuart-weitzman-global-entrepreneur-week/'},
+      {t:'London students prepare for the global debate stage', img:'https://news.northeastern.edu/wp-content/uploads/2023/11/Debate1400.jpg', d:'Nov. 28, 2023', href:'https://news.northeastern.edu/2023/11/28/american-vs-british-parliamentary-debate/'},
     ],
     photos:[IMG.lonWelc, IMG.lonBooks, IMG.lonHusky, IMG.lonThx, IMG.flags, IMG.crowd],
     embeds:[
@@ -808,9 +882,9 @@ function secGo(c){
   const m = mapsLinks(c);
   return `<div id="go" class="proto-band">
     <div class="proto-wrap">
-      <div style="display:flex;gap:clamp(32px,5vw,64px);flex-wrap:wrap;align-items:center">
-        <div style="flex:1 1 400px">${staticMap(c)}</div>
-        <div style="flex:1 1 300px">
+      <div class="proto-go">
+        <div class="proto-go__map">${staticMap(c)}</div>
+        <div class="proto-go__info">
           <h2 class="wp-block-heading proto-kepler is-size-28" style="margin:0">Getting there</h2>
           <p class="is-family-sans is-weight-bold is-size-15" style="margin:26px 0 0">${c.venue}</p>
           <p class="is-size-15" style="margin:4px 0 0">${c.addr}</p>
@@ -984,28 +1058,65 @@ function campusView(key){
 
 /* -------------------------------------------------------------- splash --- */
 function splashView(){
-  return `<div class="wp-block-cover alignfull proto-hero">
-    <span aria-hidden="true" class="wp-block-cover__background" style="background:linear-gradient(90deg,#000 0%,rgba(29,29,29,0) 100%);opacity:1"></span>
+  const gallery = [
+    {img:IMG.crowd, cls:'big'}, {img:IMG.oakConv, cls:''}, {img:IMG.lonWelc, cls:''},
+    {img:IMG.confetti, cls:''}, {img:IMG.movein2, cls:''}, {img:IMG.husky101, cls:''},
+    {img:IMG.oakTaste, cls:''}, {img:IMG.flags, cls:''}, {img:IMG.lonBooks, cls:''},
+  ];
+  return `<div class="wp-block-cover alignfull proto-hero proto-hero--home">
+    <span aria-hidden="true" class="wp-block-cover__background" style="background:rgba(0,0,0,.45);opacity:1"></span>
     <img class="wp-block-cover__image-background" src="${IMG.crowd}" alt="" data-object-fit="cover" fetchpriority="high">
     <div class="wp-block-cover__inner-container">
-      <h1 class="proto-kepler is-size-34 has-line-height-36" style="color:#fff">Convocation 2026</h1>
-      <p class="is-size-19" style="color:#fff;max-width:52ch;margin:14px 0 0">Choose your campus for the livestream, directions, speakers and everything happening on the day.</p>
+      <p class="proto-hero__eyebrow">Northeastern University</p>
+      <h1 class="proto-kepler" style="color:#fff">Northeastern Convocation 2026</h1>
+      <p class="proto-hero__sub">One incoming class, welcomed across four campuses. Join the ceremony, meet the speakers and celebrate the start of the journey — in Boston, New York City, Oakland and London.</p>
+      <div class="proto-ctas">
+        <a class="ngn-button proto-btn-white is-size-sm is-shape-round" href="#overview" data-anchor="overview"><span class="ngn-button__label">Learn more</span></a>
+        <a class="ngn-button is-mode-outlined-inverse is-size-sm is-shape-round" href="#campuses" data-anchor="campuses"><span class="ngn-button__label">Choose your campus</span></a>
+      </div>
     </div>
   </div>
-  <div class="proto-band">
+
+  <div id="overview" class="proto-band">
     <div class="proto-wrap">
-    ${sectionHead('Choose your campus')}
-    <div class="proto-pick-grid" style="margin-top:var(--proto-headgap)">
-      ${ORDER.map(k=>{const c=CAMPUSES[k];
-        return `<a class="proto-pick" href="#/${k}" aria-label="Go to the ${c.city} convocation page">
-          <img src="${c.thumb}" alt="" loading="lazy">
-          <span class="proto-pick__body">
-            <h3 class="proto-pick__city">${c.city}</h3>
-            <p class="proto-pick__meta"><b>${c.date} · ${c.time}</b><br>${c.venue}</p>
-            <span class="proto-pick__cta">Go to the ${c.city} page →</span>
-          </span>
-        </a>`;}).join('')}
+      ${sectionHead('Overview')}
+      <div class="proto-overview" style="margin-top:var(--proto-headgap)">
+        <div>
+          <p class="proto-overview__lead">Convocation is the official welcome for Northeastern’s newest students — a moment of ceremony, community and celebration before classes begin.</p>
+          <p class="proto-overview__body">Over three days in September, each campus hosts its own convocation with student speakers, alumni voices and university leaders. Wherever you’re starting — Boston, New York City, Oakland or London — the day is a shared beginning to the Northeastern experience, livestreamed here so families around the world can watch.</p>
+        </div>
+        <div class="proto-stats">
+          <div class="proto-stat"><div class="proto-stat__n">4</div><div class="proto-stat__l">Campuses hosting convocation</div></div>
+          <div class="proto-stat"><div class="proto-stat__n">3</div><div class="proto-stat__l">Days of ceremonies, Sept. 8–10</div></div>
+          <div class="proto-stat"><div class="proto-stat__n">2030</div><div class="proto-stat__l">The incoming class</div></div>
+          <div class="proto-stat"><div class="proto-stat__n">1</div><div class="proto-stat__l">Global university, one welcome</div></div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div id="gallery" class="proto-band has-surface-container-low-color-scheme">
+    <div class="proto-wrap">
+      ${sectionHead('Gallery')}
+      <div class="proto-gallery" style="margin-top:var(--proto-headgap)">
+        ${gallery.map(g=>`<a href="#campuses" class="${g.cls}"><img src="${g.img}" alt="" loading="lazy"></a>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div id="campuses" class="proto-band">
+    <div class="proto-wrap">
+      ${sectionHead('Choose your campus')}
+      <div class="proto-campuses" style="margin-top:var(--proto-headgap)">
+        ${ORDER.map(k=>{const c=CAMPUSES[k];
+          return `<a class="proto-campus" href="#/${k}" aria-label="Go to the ${c.city} convocation page">
+            <img src="${c.thumb}" alt="" loading="lazy">
+            <span class="proto-campus__body">
+              <h3 class="proto-campus__city">${c.city}</h3>
+              <span class="proto-campus__date">${c.date} · ${c.time}</span>
+            </span>
+          </a>`;}).join('')}
+      </div>
     </div>
   </div>`;
 }
@@ -1059,11 +1170,12 @@ function render(){
   } else {
     nav.innerHTML = SECTIONS.map(([id,t])=>
       `<li class="commencement-2026-header__nav-item"><a href="#${id}" data-anchor="${id}">${t}</a></li>`).join('')
-      + `<li class="commencement-2026-header__nav-item" aria-hidden="true" style="border-left:1px solid #E2E2E2;height:18px;align-self:center"></li>`
+      + `<li class="commencement-2026-header__nav-item proto-nav-divider" aria-hidden="true"></li>`
       + switcher;
   }
   closeMobileNav();
   fitCampusSwitch();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCampusSwitch);
 
   if(route!=='splash' && !live) startCountdown(CAMPUSES[route].start);
 
@@ -1084,12 +1196,16 @@ function render(){
 function fitCampusSwitch(){
   const sel = document.getElementById('campusSwitch');
   if (!sel) return;
+  const cs = getComputedStyle(sel);
   const probe = document.createElement('span');
   probe.textContent = sel.options[sel.selectedIndex]?.text || '';
-  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap';
-  probe.style.font = getComputedStyle(sel).font;
-  sel.parentElement.appendChild(probe);
-  sel.style.width = (probe.offsetWidth + 4) + 'px';
+  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;padding:0';
+  probe.style.fontFamily = cs.fontFamily;
+  probe.style.fontSize = cs.fontSize;
+  probe.style.fontWeight = cs.fontWeight;
+  probe.style.letterSpacing = cs.letterSpacing;
+  document.body.appendChild(probe);
+  sel.style.width = (Math.ceil(probe.offsetWidth) + 26) + 'px'; // text + chevron room
   probe.remove();
 }
 
