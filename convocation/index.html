@@ -660,7 +660,7 @@ const CAMPUSES = {
     venue:'MGM Music Hall at Fenway', addr:'2 Lansdowne St., Boston, MA 02215',
     mapQ:'MGM Music Hall at Fenway, 2 Lansdowne St, Boston MA', coords:[42.34676,-71.09566],
     transit:'Green Line to Kenmore is a five-minute walk. Doors on Lansdowne Street, next to Fenway Park.',
-    hero:'photos/boston/neu_ms39q5283.jpg', heroCred:'Photo by Northeastern University',
+    hero:'photos/boston/neu_ms39q5283.jpg', heroPos:'60% 30%', heroCred:'Photo by Northeastern University',
     thumb:'photos/boston/location.jpg',
     speakers:[
       {name:'Samantha Johnson', cred:'E\u201921, MS\u201921 \u00b7 2022 Women Who Empower Innovator', img:'speakers/samantha-johnson.jpg', li:'https://www.linkedin.com/in/samantha-johnson-7001b413a/'},
@@ -716,7 +716,7 @@ const CAMPUSES = {
     venue:'Holmgren Meadow', addr:'Northeastern Oakland campus, 5000 MacArthur Blvd., Oakland, CA 94613',
     mapQ:'Northeastern University Oakland, 5000 MacArthur Blvd, Oakland CA', coords:[37.78053,-122.18280],
     transit:'Outdoors on the Oakland campus, following the Taste of Oakland on the Oval. A short walk from visitor parking.',
-    hero:'photos/oakland/neu_ms39td94n.jpg', heroCred:'Photo by Northeastern University',
+    hero:'photos/oakland/neu_ms39td94n.jpg', heroPos:'72% 32%', heroCred:'Photo by Northeastern University',
     thumb:'photos/oakland/location.jpg',
     speakers:[
       {name:'Abhi Balakrishnan', cred:'DMSB’20', img:'speakers/abhi-balakrishnan.jpg', li:'https://www.linkedin.com/in/abhishekbalak/'},
@@ -842,7 +842,7 @@ function sectionHead(title){
 function heroCover(c){
   return `<div class="wp-block-cover alignfull proto-hero proto-hero--campus">
     <span aria-hidden="true" class="wp-block-cover__background" style="background:linear-gradient(90deg,#000 0%,rgba(29,29,29,0) 100%);opacity:1"></span>
-    <img class="wp-block-cover__image-background" src="${c.hero}" alt="" data-object-fit="cover" fetchpriority="high">
+    <img class="wp-block-cover__image-background" src="${c.hero}" alt="" data-object-fit="cover" fetchpriority="high"${c.heroPos?` style="object-position:${c.heroPos}"`:''}>
     <div class="wp-block-cover__inner-container">
       <h1 class="proto-kepler is-size-34 has-line-height-36" style="color:#fff">${c.city} Convocation</h1>
       <p class="meta" style="color:#fff">${c.dateLong} at ${c.time}<br>${c.venue}</p>
@@ -1076,8 +1076,8 @@ function campusView(key){
 function splashView(){
   const gallery = [
     {img:'photos/boston/neu_ms39q4979.jpg', cls:'big'}, {img:'photos/oakland/neu_ms39td75f.jpg', cls:''}, {img:'photos/london/neu_ms39qx30p.jpg', cls:''},
-    {img:'photos/boston/neu_ms39q6360.jpg', cls:''}, {img:'photos/oakland/neu_ms400b52f.jpg', cls:''}, {img:'photos/london/neu_ms39qw00r.jpg', cls:''},
-    {img:'photos/boston/neu_ms39qc557.jpg', cls:''}, {img:'photos/oakland/neu_ms39td681.jpg', cls:''}, {img:'photos/london/neu_ms39qx46k.jpg', cls:''},
+    {img:'photos/boston/neu_ms39q6360.jpg', cls:''}, {img:'photos/oakland/neu_ms39td98r.jpg', cls:''}, {img:'photos/london/neu_ms39qw00r.jpg', cls:''},
+    {img:'photos/boston/neu_ms39qc557.jpg', cls:''}, {img:'photos/oakland/neu_ms39tb395.jpg', cls:''}, {img:'photos/london/neu_ms39qx46k.jpg', cls:''},
   ];
   return `<div class="wp-block-cover alignfull proto-hero proto-hero--home">
     <span aria-hidden="true" class="wp-block-cover__background" style="background:rgba(0,0,0,.45);opacity:1"></span>
