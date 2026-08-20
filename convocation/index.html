@@ -347,8 +347,8 @@
   .proto-welcome__sub{font-family:Lato,sans-serif;font-size:16px;line-height:1.6;color:rgba(255,255,255,.66);max-width:60ch;margin:16px auto 0}
   .proto-marq{margin-top:clamp(32px,4vw,56px);display:flex;flex-direction:column;gap:6px}
   .proto-marq__row{display:flex;width:max-content;white-space:nowrap}
-  .proto-marq__row.a{animation:protoMarqL 46s linear infinite}
-  .proto-marq__row.b{animation:protoMarqR 54s linear infinite}
+  .proto-marq__row.a{animation:protoMarqL 50s linear infinite}
+  .proto-marq__row.b{animation:protoMarqR 50s linear infinite}
   .proto-marq:hover .proto-marq__row{animation-play-state:paused}
   .proto-marq__city{font-family:var(--wp--preset--font-family--serif-display,"kepler-std-display",serif);font-weight:500;font-size:clamp(44px,7vw,94px);line-height:1.18;padding:0 .32em;color:#fff;cursor:pointer;transition:color .2s,opacity .2s}
   .proto-marq__city.dim{color:rgba(255,255,255,.4)}
@@ -1124,6 +1124,11 @@ function initWelcomeMarquee(){
     el.addEventListener('mouseleave',()=>reveal.classList.remove('on'));
   });
   marq.addEventListener('mousemove',e=>{reveal.style.left=e.clientX+'px';reveal.style.top=e.clientY+'px';});
+  // match scroll speed across rows regardless of content width (px/sec)
+  const setSpeed=()=>{marq.querySelectorAll('.proto-marq__row').forEach(row=>{
+    const half=row.scrollWidth/2; if(half>0) row.style.animationDuration=(half/55)+'s';});};
+  setSpeed();
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(setSpeed);
 }
 function splashView(){
   const gallery = [
