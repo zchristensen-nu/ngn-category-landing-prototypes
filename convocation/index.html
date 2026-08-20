@@ -354,7 +354,8 @@
   .proto-marq__city.dim{color:rgba(255,255,255,.4)}
   .proto-marq__city:hover{color:var(--ngn-v2-sys-color-primary,#c8102e)}
   .proto-marq:hover .proto-marq__city:not(:hover){opacity:.5}
-  .proto-marq__dot{align-self:center;width:.16em;height:.16em;border-radius:50%;background:var(--ngn-v2-sys-color-primary,#c8102e);flex:0 0 auto}
+  .proto-marq__dot{align-self:center;width:clamp(13px,1.1vw,17px);height:clamp(13px,1.1vw,17px);flex:0 0 auto;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M0 0V4.796H15.6936L1.70524 18.7843L5.09576 22.1815L19.204 8.06661V24H24V0H0Z' fill='%23CF2B28'/></svg>") center/contain no-repeat}
   .proto-marq__reveal{position:fixed;top:0;left:0;width:clamp(200px,18vw,260px);pointer-events:none;opacity:0;z-index:120;transform:translate(-50%,26px) scale(.94);transition:opacity .2s ease,transform .2s ease}
   .proto-marq__reveal.on{opacity:1;transform:translate(-50%,26px) scale(1)}
   .proto-marq__reveal img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;box-shadow:0 24px 70px rgba(0,0,0,.6)}
