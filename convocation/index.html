@@ -1124,11 +1124,12 @@ function initWelcomeMarquee(){
     el.addEventListener('mouseleave',()=>reveal.classList.remove('on'));
   });
   marq.addEventListener('mousemove',e=>{reveal.style.left=e.clientX+'px';reveal.style.top=e.clientY+'px';});
-  // match scroll speed across rows regardless of content width (px/sec)
-  const setSpeed=()=>{marq.querySelectorAll('.proto-marq__row').forEach(row=>{
-    const half=row.scrollWidth/2; if(half>0) row.style.animationDuration=(half/55)+'s';});};
+  // match scroll speed across rows, scaled to viewport so it feels consistent (px/sec)
+  const setSpeed=()=>{const spd=window.innerWidth/26; marq.querySelectorAll('.proto-marq__row').forEach(row=>{
+    const half=row.scrollWidth/2; if(half>0) row.style.animationDuration=(half/spd)+'s';});};
   setSpeed();
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(setSpeed);
+  addEventListener('resize', setSpeed);
 }
 function splashView(){
   const gallery = [
